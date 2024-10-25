@@ -47,9 +47,12 @@ export default class SamplerNode extends CompositeAudioNode {
 	}
 
 	getState(){
+		
 		if(!this.gui) return {
 			presetName: this.currentPreset,
 		};
+
+
 		// console.log("getState currentPreset = " + this.currentPreset);
 		const currentState = this.gui.getCurrentState(this.currentPreset, this.gui.samplePlayers);
 		return {
@@ -59,7 +62,11 @@ export default class SamplerNode extends CompositeAudioNode {
 	}
 
 	setState(state){
-		if(!this.gui) return;
+		if(!this.gui) {
+			this.stateToRestore = state;
+			return;
+		}
+
 		console.log("setState currentPreset = " + state.presetName);
 		//ask GUI to load the preset
 		// this.gui.loadCompletePreset(state.presetName);

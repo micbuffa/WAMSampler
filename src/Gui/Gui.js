@@ -1,8 +1,8 @@
 // https://github.com/g200kg/webaudio-controls/blob/master/webaudio-controls.js
 window.WebAudioControlsOptions = {
-	useMidi:1,
-	preserveMidiLearn:1,
-  }
+	useMidi: 1,
+	preserveMidiLearn: 1,
+}
 import '../utils/webaudio-controls.js';
 import BufferLoader from './bufferLoader.js';
 import SamplePlayer from './SamplePlayer.js';
@@ -18,14 +18,14 @@ const getBaseURL = () => {
 function changePathToAbsolute(pathArray) {
 	// turn these realtive paths into absolute paths
 	pathArray = pathArray.map((url) => {
-		if(url.startsWith('http')) {
+		if (url.startsWith('http')) {
 			//console.log("URL is already absolute, doing nothing url = " + url);
 			return url;
 		}
 
 		//console.log("Changin url = " + url + " to absolute path");
-		if(url ==='') return url;
-		
+		if (url === '') return url;
+
 		url = getBaseURL() + url;
 		//console.log(url);
 		return url;
@@ -80,6 +80,7 @@ let style = `
 }
 
 #sampler {
+	contain: strict;
 	position: relative;
 	overflow: hidden;
 
@@ -1100,7 +1101,8 @@ export default class SamplerHTMLElement extends HTMLElement {
 		// add drag and drop for switchpads
 		this.setAllDragAndDrop();
 
-		// add listeners on the select presets
+		
+
 		this.setPreset();
 
 		// add listeners on the canvas
@@ -1119,9 +1121,28 @@ export default class SamplerHTMLElement extends HTMLElement {
 		this.updateMidiNoteValue();
 
 		this.setVelocity();
+
+		// add listeners on the select presets
+		// Check if there is a current state to restore, that could not be restored because the gui was npt built yet
+		if (this.plugin.audioNode.stateToRestore) {
+			let state = this.plugin.audioNode.stateToRestore;
+			console.log("HACK !!!!setState currentPreset = " + state.presetName);
+			//ask GUI to load the preset
+			// this.gui.loadCompletePreset(state.presetName);
+			this.loadCurrentPreset(state.presetName);
+ 
+			this.loadCurrentState(state.currentState);
+
+			console.log(state.currentState);
+
+			// remove state to restore
+			this.plugin.audioNode.stateToRestore = null;
+		} 
+		
 	}
 
 	setWebAudioControlSpritesheetImages() {
+		console.log("setWebAudioControlSpritesheetImages")
 		let switches = this.shadowRoot.querySelectorAll('.switchpad');
 		switches.forEach((pad) => {
 			let imgUrl = pad.getAttribute("src");
@@ -1133,7 +1154,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 			pad.setAttribute("src", imgBase64);
 		});
 	}
-		
+
 	setSamplerBackgroundImage() {
 		let samplerDiv = this.shadowRoot.querySelector('#sampler');
 		samplerDiv.style.backgroundImage = "url(" + this.backgroundImageURL + ")";
@@ -1175,8 +1196,8 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 	setKnobs() {
 		const effectKnobs = this.shadowRoot.querySelectorAll('.knob');
-		effectKnobs.forEach((effectKnob) => { effectKnob.classList.add('element-disabled')});
-		
+		effectKnobs.forEach((effectKnob) => { effectKnob.classList.add('element-disabled') });
+
 		this.shadowRoot.querySelector('#knob1').addEventListener('input', (e) => {
 			//this.plugin.audioNode.setParamsValues({ volumeGain: e.target.value });
 
@@ -1196,7 +1217,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 		});
 
-		
+
 
 		this.shadowRoot.querySelector('#knob3').addEventListener('input', (e) => {
 			//this.plugin.audioNode.setParamsValues({ tone: e.target.value });
@@ -1283,7 +1304,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 	//initialize knobs values
 	initKnobs() {
 		const effectKnobs = this.shadowRoot.querySelectorAll('.knob');
-		effectKnobs.forEach((effectKnob) => { effectKnob.classList.add('element-disabled')});
+		effectKnobs.forEach((effectKnob) => { effectKnob.classList.add('element-disabled') });
 
 		const btnReverse = this.shadowRoot.querySelector('#reverse');
 		btnReverse.disabled = true;
@@ -1365,7 +1386,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 			save.classList.add('saved');
 		}
 
-		
+
 		apiKeyInput.addEventListener('focus', (e) => {
 			save.classList.remove('saved');
 			//disable keyboard events for playin pads
@@ -1403,7 +1424,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 		const input = this.shadowRoot.querySelector('#inputSampleName');
 		const buttonText = b.querySelector('.button_text');
 
-		if(buttonText){
+		if (buttonText) {
 			label.textContent = buttonText.textContent;
 		}
 		else {
@@ -1411,8 +1432,8 @@ export default class SamplerHTMLElement extends HTMLElement {
 		}
 
 		label.style.cursor = 'pointer';
-		
-		
+
+
 		if (!b) {
 			label.ondblclick = () => {
 				return;
@@ -1423,7 +1444,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 			if (b.classList.contains('selected') && ((b.classList.contains('resultButton')) || (b.nodeName === 'WEBAUDIO-SWITCH'))) {
 
 				label.ondblclick = () => {
-					if(!b.classList.contains('selected')) return;
+					if (!b.classList.contains('selected')) return;
 					label.style.display = 'none';
 					input.value = label.textContent;
 					input.style.display = 'inline-block';
@@ -1433,10 +1454,10 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 				input.onblur = () => {
 					label.textContent = input.value;
-					if(b.classList.contains('resultButton')){
-						if(label.textContent == "") label.textContent = defaultName;
+					if (b.classList.contains('resultButton')) {
+						if (label.textContent == "") label.textContent = defaultName;
 						b.textContent = label.textContent;
-					} else if(b.nodeName === 'WEBAUDIO-SWITCH'){
+					} else if (b.nodeName === 'WEBAUDIO-SWITCH') {
 						if (label.textContent == "") {
 							label.textContent = SamplerHTMLElement.defaultName[index];
 						}
@@ -1719,9 +1740,9 @@ export default class SamplerHTMLElement extends HTMLElement {
 				e.preventDefault();
 				e.stopPropagation();
 				let btnTargetId;
-				
+
 				btnTargetId = e.target.id;
-				
+
 				const dropIndex = btnTargetId;
 				const dragIndex = e.dataTransfer.getData('id');
 				const dropUrl = e.dataTransfer.getData('url');
@@ -1738,20 +1759,20 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 			b.addEventListener('dragend', (e) => {
 				let target = e.target;
-				if(!e.target.classList.contains('switchpad'))
+				if (!e.target.classList.contains('switchpad'))
 					target = e.target.parentNode;
 				target.setValue(0, true);
 				e.preventDefault();
 			});
 		});
 
-		
+
 	}
 
 	swapSample = (index1, index2) => {
 		// we get the index number
 		const numberRegex = /\d+/g;
-		if(typeof index1 === "string" && typeof index2 === "string") {
+		if (typeof index1 === "string" && typeof index2 === "string") {
 			index1 = index1.match(numberRegex)[0];
 			index2 = index2.match(numberRegex)[0];
 		}
@@ -1777,7 +1798,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 		const button1 = this.shadowRoot.querySelector('#switchpad' + index1);
 		const button2 = this.shadowRoot.querySelector('#switchpad' + index2);
 
-		if(!button1.classList.contains('selected')) return;
+		if (!button1.classList.contains('selected')) return;
 
 
 		//swap progress bar
@@ -1789,18 +1810,18 @@ export default class SamplerHTMLElement extends HTMLElement {
 		div2.replaceChild(clonedProgress1, progressPad2);
 		div1.querySelector('.padprogress').id = 'progress' + index1;
 		div2.querySelector('.padprogress').id = 'progress' + index2;
-		
-		if(SamplerHTMLElement.URLs[index2] === undefined){ 
+
+		if (SamplerHTMLElement.URLs[index2] === undefined) {
 			SamplerHTMLElement.URLs[index2] = '';
 		}
-		if(SamplerHTMLElement.URLs[index1] === undefined){
+		if (SamplerHTMLElement.URLs[index1] === undefined) {
 			SamplerHTMLElement.URLs[index1] = '';
 		}
 
-		if(SamplerHTMLElement.name[index2] === undefined){ 
+		if (SamplerHTMLElement.name[index2] === undefined) {
 			SamplerHTMLElement.name[index2] = '';
 		}
-		if(SamplerHTMLElement.name[index1] === undefined){
+		if (SamplerHTMLElement.name[index1] === undefined) {
 			SamplerHTMLElement.name[index1] = '';
 		}
 
@@ -1830,7 +1851,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 			buttonText.id = "button_text" + index1;
 			button1.innerHTML = "";
 			button1.appendChild(buttonText);
-    	}
+		}
 
 		if (!button2.querySelector(".button_text")) {
 			const buttonText = document.createElement("p");
@@ -1838,23 +1859,23 @@ export default class SamplerHTMLElement extends HTMLElement {
 			buttonText.id = "button_text" + index2;
 			button2.innerHTML = "";
 			button2.appendChild(buttonText);
-    	}
+		}
 
-		if (!button1.classList.contains('set')){
+		if (!button1.classList.contains('set')) {
 			this.setSwitchPad(index1);
 			button1.classList.remove('selected');
 		}
 
-		if(!button2.classList.contains('set')) {
+		if (!button2.classList.contains('set')) {
 			this.setSwitchPad(index2);
-			this.setLabel(index2,button2);
+			this.setLabel(index2, button2);
 			button2.classList.add('selected');
 		}
 
 
 		this.setDefaultPadKeyValue(index1);
 		this.setDefaultPadKeyValue(index2);
-		
+
 	}
 
 	addSampleToPad = (index1, index2, url) => {
@@ -1894,9 +1915,9 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 		//recreate a new SamplePlayer independant of the explorer
 		this.samplePlayers[index2] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", this.explorerDecodedSounds[index1], this.plugin.audioNode, 0);
-		
+
 		// set pads
-		if (padElement === 'WEBAUDIO-SWITCH'){
+		if (padElement === 'WEBAUDIO-SWITCH') {
 			this.setSwitchPad(index2);
 			const padBtn = this.shadowRoot.querySelector('#switchpad' + index2);
 			this.setLabel(index2, padBtn);
@@ -1924,7 +1945,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 		for (let i = 0; i < this.samplePlayers.length; i++) {
 			if (this.samplePlayers[i] != null) {
 				this.samplePlayers[i].stop();
-				if(this.samplePlayers[i].classList && this.samplePlayers[i].classList.contains('selected')) this.samplePlayers[i].classList.remove('selected');
+				if (this.samplePlayers[i].classList && this.samplePlayers[i].classList.contains('selected')) this.samplePlayers[i].classList.remove('selected');
 			}
 		}
 	}
@@ -2021,57 +2042,57 @@ export default class SamplerHTMLElement extends HTMLElement {
 		this.shadowRoot.querySelector('#resultExplorer' + index).appendChild(progressExplorer);
 	}
 
-	setDefaultPadsKeyValue(){
+	setDefaultPadsKeyValue() {
 		const switchPads = this.shadowRoot.querySelectorAll('.switchpad');
 		for (let i = 0; i < switchPads.length; i++) {
 			const switchPad = this.shadowRoot.querySelector('#switchpad' + i)
-			if(switchPad.querySelector('.button_key_text')) return;
+			if (switchPad.querySelector('.button_key_text')) return;
 			const buttonKeyValue = document.createElement('div');
 			buttonKeyValue.classList.add('button_key_text');
 			buttonKeyValue.id = 'button_key_text' + i;
-			const keyArr = ['W/Z','X','C','V','Q/A','S','D','F','A/Q','Z/W','E','R','1','2','3','4'];
+			const keyArr = ['W/Z', 'X', 'C', 'V', 'Q/A', 'S', 'D', 'F', 'A/Q', 'Z/W', 'E', 'R', '1', '2', '3', '4'];
 			buttonKeyValue.innerHTML = keyArr[i];
 			switchPad.appendChild(buttonKeyValue);
 		}
 	}
 
-	setDefaultPadKeyValue(index){
+	setDefaultPadKeyValue(index) {
 		const switchPad = this.shadowRoot.querySelector('#switchpad' + index)
 		const buttonKeyValue = document.createElement('div');
-		if(switchPad.querySelector('.button_key_text')) return;
+		if (switchPad.querySelector('.button_key_text')) return;
 		buttonKeyValue.classList.add('button_key_text');
 		buttonKeyValue.id = 'button_key_text' + index;
-		const keyArr = ['W/Z','X','C','V','Q/A','S','D','F','A/Q','Z/W','E','R','1','2','3','4'];
+		const keyArr = ['W/Z', 'X', 'C', 'V', 'Q/A', 'S', 'D', 'F', 'A/Q', 'Z/W', 'E', 'R', '1', '2', '3', '4'];
 		buttonKeyValue.innerHTML = keyArr[index];
 		switchPad.appendChild(buttonKeyValue);
 	}
 
-	setMidiNoteName(index, noteValue, noteName){
-		if(!noteValue) return;
+	setMidiNoteName(index, noteValue, noteName) {
+		if (!noteValue) return;
 		const switchPad = this.shadowRoot.querySelector('#switchpad' + index);
 		const PadMidiNoteValue = document.createElement('div');
 		PadMidiNoteValue.classList.add('button_midi_note');
 		PadMidiNoteValue.id = 'button_midi_note' + index;
 
 		//convert midi note value to midi note name
-		const midiNotes = ['A0','A#0','B0','C1','C#1','D1','D#1','E1','F1','F#1','G1','G#1',
-							'A1','A#1','B1','C2','C#2','D2','D#2','E2','F2','F#2','G2','G#2',
-							'A2','A#2','B2','C3','C#3','D3','D#3','E3','F3','F#3','G3','G#3',
-							'A3','A#3','B3','C4','C#4','D4','D#4','E4','F4','F#4','G4','G#4',
-							'A4','A#4','B4','C5','C#5','D5','D#5','E5','F5','F#5','G5','G#5',
-							'A5','A#5','B5','C6','C#6','D6','D#6','E6','F6','F#6','G6','G#6',
-							'A6','A#6','B6','C7','C#7','D7','D#7','E7','F7','F#7','G7','G#7',
-							'A7','A#7','B7','C8','C#8','D8','D#8','E8','F8','F#8','G8','G#8',
-							'A8','A#8','B8','C9','C#9','D9','D#9','E9','F9','F#9','G9','G#9',];
+		const midiNotes = ['A0', 'A#0', 'B0', 'C1', 'C#1', 'D1', 'D#1', 'E1', 'F1', 'F#1', 'G1', 'G#1',
+			'A1', 'A#1', 'B1', 'C2', 'C#2', 'D2', 'D#2', 'E2', 'F2', 'F#2', 'G2', 'G#2',
+			'A2', 'A#2', 'B2', 'C3', 'C#3', 'D3', 'D#3', 'E3', 'F3', 'F#3', 'G3', 'G#3',
+			'A3', 'A#3', 'B3', 'C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4',
+			'A4', 'A#4', 'B4', 'C5', 'C#5', 'D5', 'D#5', 'E5', 'F5', 'F#5', 'G5', 'G#5',
+			'A5', 'A#5', 'B5', 'C6', 'C#6', 'D6', 'D#6', 'E6', 'F6', 'F#6', 'G6', 'G#6',
+			'A6', 'A#6', 'B6', 'C7', 'C#7', 'D7', 'D#7', 'E7', 'F7', 'F#7', 'G7', 'G#7',
+			'A7', 'A#7', 'B7', 'C8', 'C#8', 'D8', 'D#8', 'E8', 'F8', 'F#8', 'G8', 'G#8',
+			'A8', 'A#8', 'B8', 'C9', 'C#9', 'D9', 'D#9', 'E9', 'F9', 'F#9', 'G9', 'G#9',];
 		//A0 = 21
 		let newNoteValue = noteValue - 21;
-		if(!noteName) {
+		if (!noteName) {
 			noteName = midiNotes[newNoteValue];
 		}
 		PadMidiNoteValue.innerHTML = noteName;
-		if(!switchPad.querySelector('.button_midi_note')){
+		if (!switchPad.querySelector('.button_midi_note')) {
 			switchPad.appendChild(PadMidiNoteValue);
-		}else{
+		} else {
 			switchPad.replaceChild(PadMidiNoteValue, switchPad.querySelector('.button_midi_note'));
 		}
 	}
@@ -2079,15 +2100,15 @@ export default class SamplerHTMLElement extends HTMLElement {
 	setNoteValue(index, noteName) {
 		const switchPad = this.shadowRoot.querySelector('#switchpad' + index);
 		//convert midi note name to midi note value
-		const midiNotes = ['A0','A#0','B0','C1','C#1','D1','D#1','E1','F1','F#1','G1','G#1',
-							'A1','A#1','B1','C2','C#2','D2','D#2','E2','F2','F#2','G2','G#2',
-							'A2','A#2','B2','C3','C#3','D3','D#3','E3','F3','F#3','G3','G#3',
-							'A3','A#3','B3','C4','C#4','D4','D#4','E4','F4','F#4','G4','G#4',
-							'A4','A#4','B4','C5','C#5','D5','D#5','E5','F5','F#5','G5','G#5',
-							'A5','A#5','B5','C6','C#6','D6','D#6','E6','F6','F#6','G6','G#6',
-							'A6','A#6','B6','C7','C#7','D7','D#7','E7','F7','F#7','G7','G#7',
-							'A7','A#7','B7','C8','C#8','D8','D#8','E8','F8','F#8','G8','G#8',
-							'A8','A#8','B8','C9','C#9','D9','D#9','E9','F9','F#9','G9','G#9',];
+		const midiNotes = ['A0', 'A#0', 'B0', 'C1', 'C#1', 'D1', 'D#1', 'E1', 'F1', 'F#1', 'G1', 'G#1',
+			'A1', 'A#1', 'B1', 'C2', 'C#2', 'D2', 'D#2', 'E2', 'F2', 'F#2', 'G2', 'G#2',
+			'A2', 'A#2', 'B2', 'C3', 'C#3', 'D3', 'D#3', 'E3', 'F3', 'F#3', 'G3', 'G#3',
+			'A3', 'A#3', 'B3', 'C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4',
+			'A4', 'A#4', 'B4', 'C5', 'C#5', 'D5', 'D#5', 'E5', 'F5', 'F#5', 'G5', 'G#5',
+			'A5', 'A#5', 'B5', 'C6', 'C#6', 'D6', 'D#6', 'E6', 'F6', 'F#6', 'G6', 'G#6',
+			'A6', 'A#6', 'B6', 'C7', 'C#7', 'D7', 'D#7', 'E7', 'F7', 'F#7', 'G7', 'G#7',
+			'A7', 'A#7', 'B7', 'C8', 'C#8', 'D8', 'D#8', 'E8', 'F8', 'F#8', 'G8', 'G#8',
+			'A8', 'A#8', 'B8', 'C9', 'C#9', 'D9', 'D#9', 'E9', 'F9', 'F#9', 'G9', 'G#9',];
 		const noteValue = midiNotes.indexOf(noteName) + 21;
 
 		this.setMidiNoteName(index, noteValue, noteName);
@@ -2096,27 +2117,27 @@ export default class SamplerHTMLElement extends HTMLElement {
 		switchPad.midiController.channel = 0;
 	}
 
-	updateMidiNoteValue(noteValue){
+	updateMidiNoteValue(noteValue) {
 		const preset = this.shadowRoot.querySelector('#selectPreset').value;
-		let menu=document.getElementById("webaudioctrl-context-menu");
+		let menu = document.getElementById("webaudioctrl-context-menu");
 		let stockMidiLearn = localStorage.getItem("WebAudioControlsMidiLearn");
 		let listMidiLearn = JSON.parse(stockMidiLearn);
-		
+
 		//if pad is learning....
-		if(menu.knob && menu.knob.checked) {
+		if (menu.knob && menu.knob.checked) {
 			//if another pad has already this midi note value, remove the previous midi learn
-			if(listMidiLearn.find(element => element.cc.cc === noteValue)) {
+			if (listMidiLearn.find(element => element.cc.cc === noteValue)) {
 				let filterList = listMidiLearn.filter(element => element.cc.cc === noteValue);
 				let filterListPresets;
 				//if there is more than one pad with this midi note value or if the pad is already assigned to this midi note value, remove the previous midi learn
-				if(filterList.length > 1) {
+				if (filterList.length > 1) {
 					filterList = filterList.filter(element => element.id != menu.knob.id);
-					filterList.map(element => {element.cc = {}});
+					filterList.map(element => { element.cc = {} });
 					const switchPadsId = filterList.map(element => element.id);
 					const switchPads = switchPadsId.map(element => this.shadowRoot.querySelector('#' + element));
 					switchPads.forEach((switchPad) => {
 						switchPad.midiController = {};
-						if(switchPad.querySelector('.button_midi_note')){
+						if (switchPad.querySelector('.button_midi_note')) {
 							switchPad.querySelector('.button_midi_note').remove();
 						}
 						switchPad.setValue(0);
@@ -2124,25 +2145,25 @@ export default class SamplerHTMLElement extends HTMLElement {
 				}
 				localStorage.setItem("WebAudioControlsMidiLearn", JSON.stringify(listMidiLearn));
 			}
-		}	
+		}
 		menu.onclick = (e) => {
 			const switchPad = menu.knob.id;
 			const switchPadNote = menu.knob.midiController.cc;
 			//get current Preset
 			const preset = this.shadowRoot.querySelector('#selectPreset').value;
-			
+
 			let stockMidiLearn = localStorage.getItem("WebAudioControlsMidiLearn");
 			let listMidiLearn = JSON.parse(stockMidiLearn);
 
-			if(!listMidiLearn) return;
-			
+			if (!listMidiLearn) return;
+
 			if (!switchPadNote) {
-				if(menu.knob.querySelector('.button_midi_note')){
+				if (menu.knob.querySelector('.button_midi_note')) {
 					menu.knob.querySelector('.button_midi_note').remove();
 				}
 			}
 		};
-		
+
 		this.clearAllMidiLearning();
 		this.resetAllMidiLearning();
 		const defaultMidiLearnBtn = this.shadowRoot.querySelector('#defaultMidiLearn');
@@ -2158,37 +2179,37 @@ export default class SamplerHTMLElement extends HTMLElement {
 			const switchpads = this.shadowRoot.querySelectorAll('.switchpad');
 			switchpads.forEach((switchpad) => {
 				switchpad.midiController = {};
-				if(switchpad.querySelector('.button_midi_note')){
+				if (switchpad.querySelector('.button_midi_note')) {
 					switchpad.querySelector('.button_midi_note').remove();
 				}
 			});
 			let stockMidiLearn = localStorage.getItem("WebAudioControlsMidiLearn");
 			let listMidiLearn = JSON.parse(stockMidiLearn);
-			listMidiLearn.map(element => {element.cc = {}});
+			listMidiLearn.map(element => { element.cc = {} });
 			localStorage.setItem("WebAudioControlsMidiLearn", JSON.stringify(listMidiLearn));
 		};
 	}
 
-	resetAllMidiLearning(){
+	resetAllMidiLearning() {
 		//if there is a preset saved with midi learns, reset all midi learns to the swtichpads
 		const resetBtn = this.shadowRoot.querySelector('#resetMidiLearn');
 		resetBtn.onclick = () => {
 			const currentPreset = this.shadowRoot.querySelector('#selectPreset').value;
 			const switchpads = this.shadowRoot.querySelectorAll('.switchpad')
-			if(localStorage.presets && PresetManager.getMidiLearnListFromCurrentPreset(currentPreset)){
+			if (localStorage.presets && PresetManager.getMidiLearnListFromCurrentPreset(currentPreset)) {
 				PresetManager.loadMidiControllerFromCurrentPreset(currentPreset, switchpads);
 
 				switchpads.forEach((switchpad) => {
 					const index = switchpad.id.match(/\d+/g)[0];
 					// if(!switchpad.querySelector('.button_midi_note')){
-						const currentMidiLearn = PresetManager.getMidiLearnFromCurrentPreset(currentPreset, switchpad.id);
-						if(currentMidiLearn.cc.cc === undefined) {
-							if(switchpad.querySelector('.button_midi_note')){
-								switchpad.querySelector('.button_midi_note').remove();
-							}
+					const currentMidiLearn = PresetManager.getMidiLearnFromCurrentPreset(currentPreset, switchpad.id);
+					if (currentMidiLearn.cc.cc === undefined) {
+						if (switchpad.querySelector('.button_midi_note')) {
+							switchpad.querySelector('.button_midi_note').remove();
 						}
-						this.setMidiNoteName(index, currentMidiLearn.cc.cc);
 					}
+					this.setMidiNoteName(index, currentMidiLearn.cc.cc);
+				}
 				)
 			} else {
 				this.defaultMidiMapping();
@@ -2203,11 +2224,11 @@ export default class SamplerHTMLElement extends HTMLElement {
 		let midiLearnList = [];
 		const preset = this.shadowRoot.querySelector('#selectPreset').value;
 		PresetManager.setDefaultMidiMapping(preset, switchPads, defaultRootMidiNote);
-		if(localStorage.presets && !manualClick) {
-			if(PresetManager.getMidiLearnListFromCurrentPreset(preset)) {
+		if (localStorage.presets && !manualClick) {
+			if (PresetManager.getMidiLearnListFromCurrentPreset(preset)) {
 				const midiList = PresetManager.getMidiLearnListFromCurrentPreset(preset);
 				midiList.forEach((midi) => {
-					if(midi.id.includes('switchpad')) {
+					if (midi.id.includes('switchpad')) {
 						this.setMidiNoteName(midi.id.match(/\d+/g)[0], midi.cc.cc);
 					}
 				});
@@ -2216,15 +2237,15 @@ export default class SamplerHTMLElement extends HTMLElement {
 					// switchPad.midiController = {};
 					const index = switchPad.id.match(/\d+/g)[0];
 					this.setMidiNoteName(index, defaultRootMidiNote + parseInt(index));
-					midiLearnList.push({id: switchPad.id, cc: {cc: defaultRootMidiNote + parseInt(index), channel: 0}});
-					if(switchPad.midiController) {
+					midiLearnList.push({ id: switchPad.id, cc: { cc: defaultRootMidiNote + parseInt(index), channel: 0 } });
+					if (switchPad.midiController) {
 						switchPad.midiController.channel = 0;
 						switchPad.midiController.cc = defaultRootMidiNote + parseInt(index);
 					}
 				});
 			}
 		}
-		else if(localStorage.WebAudioControlsMidiLearn){
+		else if (localStorage.WebAudioControlsMidiLearn) {
 			midiLearnList = JSON.parse(localStorage.WebAudioControlsMidiLearn);
 			switchPads.forEach((switchPad) => {
 				const index = switchPad.id.match(/\d+/g)[0];
@@ -2232,7 +2253,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 				const currentMidiLearn = midiLearnList.find(element => element.id == switchPad.id);
 				currentMidiLearn.cc.channel = 0;
 				currentMidiLearn.cc.cc = defaultRootMidiNote + parseInt(index);
-				if(switchPad.midiController) {
+				if (switchPad.midiController) {
 					switchPad.midiController.cc = currentMidiLearn.cc.cc;
 					switchPad.midiController.channel = currentMidiLearn.cc.channel;
 				}
@@ -2241,14 +2262,14 @@ export default class SamplerHTMLElement extends HTMLElement {
 			switchPads.forEach((switchPad) => {
 				const index = switchPad.id.match(/\d+/g)[0];
 				this.setMidiNoteName(index, defaultRootMidiNote + parseInt(index));
-				midiLearnList.push({id: switchPad.id, cc: {cc: defaultRootMidiNote + parseInt(index), channel: 0}});
-				if(switchPad.midiController) {
+				midiLearnList.push({ id: switchPad.id, cc: { cc: defaultRootMidiNote + parseInt(index), channel: 0 } });
+				if (switchPad.midiController) {
 					switchPad.midiController.cc = defaultRootMidiNote + parseInt(index);
 					switchPad.midiController.channel = 0;
 				}
 			});
 		}
-		if(midiLearnList.length > 0) {
+		if (midiLearnList.length > 0) {
 			localStorage.setItem("WebAudioControlsMidiLearn", JSON.stringify(midiLearnList));
 		}
 	}
@@ -2258,11 +2279,11 @@ export default class SamplerHTMLElement extends HTMLElement {
 		const preset = this.shadowRoot.querySelector('#selectPreset').value;
 
 		const buttonText = document.createElement('p');
-		
+
 		if (SamplerHTMLElement.URLs[index].includes('http') && SamplerHTMLElement.name[index]) {
 			buttonText.innerHTML = SamplerHTMLElement.name[index];
 		}
-	
+
 		//add p text element
 		buttonText.classList.add('button_text');
 		buttonText.id = 'button_text' + index;
@@ -2271,7 +2292,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 		switchPad.appendChild(buttonText);
 
 		// Add a button to delete the sample in the top right corner
-		if(buttonText && buttonText.innerHTML !== "") {
+		if (buttonText && buttonText.innerHTML !== "") {
 			const deleteSample = document.createElement('button');
 			deleteSample.classList.add('deleteSample');
 			deleteSample.id = 'deleteSample' + index;
@@ -2279,7 +2300,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 			deleteSample.onmousedown = (e) => {
 				e.preventDefault();
 				e.stopPropagation();
-				if(e.button == 2) {
+				if (e.button == 2) {
 					e.preventDefault();
 					return;
 				}
@@ -2287,22 +2308,22 @@ export default class SamplerHTMLElement extends HTMLElement {
 			}
 			switchPad.appendChild(deleteSample);
 		}
-		
+
 
 		//play sample
 		switchPad.onmousedown = (e) => {
 
 			//disable right click
-			if(e.button == 2){
+			if (e.button == 2) {
 				e.preventDefault();
 				return;
-			 };
-	
+			};
+
 			if (this.player != this.samplePlayers[index]) {
 				this.player = this.samplePlayers[index];
 			}
 
-			if(!this.player) {
+			if (!this.player) {
 				return;
 			}
 
@@ -2348,15 +2369,15 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 		const currentPreset = this.shadowRoot.querySelector('#selectPreset').value;
 
-		if (localStorage.WebAudioControlsMidiLearn ) {
+		if (localStorage.WebAudioControlsMidiLearn) {
 			let stockMidiLearn = localStorage.getItem("WebAudioControlsMidiLearn");
 			let listMidiLearn = JSON.parse(stockMidiLearn);
 			const currentMidiLearn = listMidiLearn.find(element => element.id == switchPad.id);
 			this.setMidiNoteName(index, currentMidiLearn.cc.cc);
 			return;
-		} else if(localStorage.presets && PresetManager.getMidiLearnListFromCurrentPreset(currentPreset)) {
+		} else if (localStorage.presets && PresetManager.getMidiLearnListFromCurrentPreset(currentPreset)) {
 			const currentMidiLearn = PresetManager.getMidiLearnFromCurrentPreset(currentPreset, switchPad.id);
-			if(currentMidiLearn === undefined) return;
+			if (currentMidiLearn === undefined) return;
 			this.setMidiNoteName(index, currentMidiLearn.cc.cc);
 		}
 	}
@@ -2443,7 +2464,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 		b.classList.remove('active');
 
 		this.setDefaultPadKeyValue(index);
-		if(midiLearnText != null){
+		if (midiLearnText != null) {
 			b.appendChild(midiLearnText);
 		}
 	}
@@ -2452,7 +2473,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 	setPreset = () => {
 		const presetSelectMenu = this.shadowRoot.querySelector('#selectPreset');
 		PresetManager.buildPresetMenu(presetSelectMenu);
-		
+
 		//!!for testing load the blank preset first !!
 		let currentPresetName = 'blank preset';
 		//let currentPresetName = presetSelectMenu.value;
@@ -2470,20 +2491,20 @@ export default class SamplerHTMLElement extends HTMLElement {
 			presetSelectMenu.blur();
 			currentPresetName = presetSelectMenu.value;
 			this.loadCurrentPreset(currentPresetName);
-			
+
 			this.initKnobs();
-			
+
 		};
 	}
 
 	loadCurrentPreset(presetName, newDecodedSounds) {
-		
+
 
 		this.shadowRoot.querySelector('#selectPreset').value = presetName;
 
 		this.plugin.audioNode.currentPreset = presetName;
 		this.plugin.audioNode.gui = this;
-		
+
 		this.samplePlayers = [];
 		this.player = null;
 		this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -2511,29 +2532,29 @@ export default class SamplerHTMLElement extends HTMLElement {
 		const deletePreset = this.shadowRoot.querySelector('#deletePreset');
 		let preset;
 
-		if(localStorage.presets) {
+		if (localStorage.presets) {
 			preset = PresetManager.getCurrentPreset(presetName);
 		}
-		else{
+		else {
 			preset = PresetManager.getFactoryPreset(presetName);
 		}
-		
-		if(preset.isFactoryPresets) {
+
+		if (preset.isFactoryPresets) {
 			deletePreset.innerHTML = "Reset preset";
 		}
-		else if(!preset.isFactoryPresets){
+		else if (!preset.isFactoryPresets) {
 			deletePreset.innerHTML = "Delete preset";
 		}
 
-		deletePreset.onclick = () => {this.deletePreset();};
+		deletePreset.onclick = () => { this.deletePreset(); };
 
 		//save preset button
 		const savePreset = this.shadowRoot.querySelector('#savePreset');
-		savePreset.onclick = () => {this.savePreset();};
+		savePreset.onclick = () => { this.savePreset(); };
 
 		//create preset button
 		const createPreset = this.shadowRoot.querySelector('#createPreset');
-		createPreset.onclick = () => {this.createPreset("custom preset",switchPads);};
+		createPreset.onclick = () => { this.createPreset("custom preset", switchPads); };
 
 		const noteSetBtn = this.shadowRoot.querySelector('#createNoteSet');
 		noteSetBtn.disabled = true;
@@ -2547,52 +2568,52 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 
 		let bl = new BufferLoader(this.plugin.audioContext, SamplerHTMLElement.URLs, this.shadowRoot, (bufferList) => {
-			
+
 			this.decodedSounds = bufferList;
 
 			this.decodedSounds.forEach((decodedSound, index) => {
 
-				if(decodedSound != undefined) { 
-				this.samplePlayers[index] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", decodedSound, this.plugin.audioNode, 0);
-				if(currentState.samples[index].player){
-					SamplerHTMLElement.name[index] = currentState.samples[index].player.name;
-					SamplerHTMLElement.defaultName[index] = currentState.samples[index].name;
-					this.samplePlayers[index] = PresetManager.loadPlayerFromCurrentPreset(this.samplePlayers[index], index, currentState);
-				}
-				else if(currentState) {
-					SamplerHTMLElement.name[index] = currentState.samples[index].name;
-				}
-				this.setSwitchPad(index);
-				this.setDefaultPadKeyValue(index);
-				window.requestAnimationFrame(this.handleAnimationFrame);
+				if (decodedSound != undefined) {
+					this.samplePlayers[index] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", decodedSound, this.plugin.audioNode, 0);
+					if (currentState.samples[index].player) {
+						SamplerHTMLElement.name[index] = currentState.samples[index].player.name;
+						SamplerHTMLElement.defaultName[index] = currentState.samples[index].name;
+						this.samplePlayers[index] = PresetManager.loadPlayerFromCurrentPreset(this.samplePlayers[index], index, currentState);
+					}
+					else if (currentState) {
+						SamplerHTMLElement.name[index] = currentState.samples[index].name;
+					}
+					this.setSwitchPad(index);
+					this.setDefaultPadKeyValue(index);
+					window.requestAnimationFrame(this.handleAnimationFrame);
 				}
 			});
-			for(let i=0; i<16; i++) {
+			for (let i = 0; i < 16; i++) {
 				const switchPad = this.shadowRoot.querySelector('#switchpad' + i);
 				switchPad.midiController = {};
 			}
-			
+
 			//bind the midi learn into the corresponding pad
 			const switchPads = this.shadowRoot.querySelectorAll('.switchpad');
-			if(currentState.midiLearn){
-			const switchPadsWithMidiLearn = currentState.midiLearn.filter(element => element.cc.cc);
-			switchPads.forEach((switchpad) => {
-				switchpad.midiController = {};
-				if(switchPadsWithMidiLearn.find(element => element.id === switchpad.id)) {
-					switchpad.midiController.channel = currentState.midiLearn.find(element => element.id === switchpad.id).cc.channel;
-					switchpad.midiController.cc = currentState.midiLearn.find(element => element.id === switchpad.id).cc.cc;
+			if (currentState.midiLearn) {
+				const switchPadsWithMidiLearn = currentState.midiLearn.filter(element => element.cc.cc);
+				switchPads.forEach((switchpad) => {
+					switchpad.midiController = {};
+					if (switchPadsWithMidiLearn.find(element => element.id === switchpad.id)) {
+						switchpad.midiController.channel = currentState.midiLearn.find(element => element.id === switchpad.id).cc.channel;
+						switchpad.midiController.cc = currentState.midiLearn.find(element => element.id === switchpad.id).cc.cc;
 
-					this.setMidiNoteName(switchpad.id.match(/\d+/g)[0], switchpad.midiController.cc);
+						this.setMidiNoteName(switchpad.id.match(/\d+/g)[0], switchpad.midiController.cc);
 
-					localStorage.setItem("WebAudioControlsMidiLearn", JSON.stringify(currentState.midiLearn));
-				}
-			});
-		}
+						localStorage.setItem("WebAudioControlsMidiLearn", JSON.stringify(currentState.midiLearn));
+					}
+				});
+			}
 
 		});
-	bl.load();
+		bl.load();
 	}
-	
+
 	loadSounds = (presetValue, newDecodedSounds) => {
 		SamplerHTMLElement.URLs = [];
 		SamplerHTMLElement.name = [];
@@ -2602,13 +2623,13 @@ export default class SamplerHTMLElement extends HTMLElement {
 			const progressBar = this.shadowRoot.querySelector('#progress' + i);
 			progressBar.value = 0;
 		}
-		
-		if(localStorage.presets) {
-			
+
+		if (localStorage.presets) {
+
 			// if local storage has presets item, load the selected preset saved in local storage
 			const currentPreset = PresetManager.getCurrentPreset(presetValue);
 
-			if(currentPreset) {
+			if (currentPreset) {
 				//get urls from current preset
 				let currentPresetUrls = PresetManager.getPresetUrls(currentPreset);
 				const currentPresetNames = PresetManager.getPresetUrlsNames(currentPreset);
@@ -2617,40 +2638,40 @@ export default class SamplerHTMLElement extends HTMLElement {
 				SamplerHTMLElement.defaultName = currentPresetNames;
 			}
 			let bl = new BufferLoader(this.plugin.audioContext, SamplerHTMLElement.URLs, this.shadowRoot, (bufferList) => {
-				if(newDecodedSounds) {this.decodedSounds = newDecodedSounds}
-				else {this.decodedSounds = bufferList}
+				if (newDecodedSounds) { this.decodedSounds = newDecodedSounds }
+				else { this.decodedSounds = bufferList }
 
 				this.decodedSounds.forEach((decodedSound, index) => {
 
-					if(decodedSound != undefined) { 
-					this.samplePlayers[index] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", decodedSound, this.plugin.audioNode, 0);
-					if(currentPreset.samples[index].player){
-						SamplerHTMLElement.name[index] = currentPreset.samples[index].player.name;
-						SamplerHTMLElement.defaultName[index] = currentPreset.samples[index].name;
-						this.samplePlayers[index] = PresetManager.loadPlayerFromCurrentPreset(this.samplePlayers[index], index, currentPreset);
-						// this.samplePlayers[index].reversed = currentPreset.samples[index].player.reversed;
-					}
-					else if(currentPreset) {
-						SamplerHTMLElement.name[index] = currentPreset.samples[index].name;
-					}
-					this.setSwitchPad(index);
-					this.setDefaultPadKeyValue(index);
-					window.requestAnimationFrame(this.handleAnimationFrame);
+					if (decodedSound != undefined) {
+						this.samplePlayers[index] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", decodedSound, this.plugin.audioNode, 0);
+						if (currentPreset.samples[index].player) {
+							SamplerHTMLElement.name[index] = currentPreset.samples[index].player.name;
+							SamplerHTMLElement.defaultName[index] = currentPreset.samples[index].name;
+							this.samplePlayers[index] = PresetManager.loadPlayerFromCurrentPreset(this.samplePlayers[index], index, currentPreset);
+							// this.samplePlayers[index].reversed = currentPreset.samples[index].player.reversed;
+						}
+						else if (currentPreset) {
+							SamplerHTMLElement.name[index] = currentPreset.samples[index].name;
+						}
+						this.setSwitchPad(index);
+						this.setDefaultPadKeyValue(index);
+						window.requestAnimationFrame(this.handleAnimationFrame);
 					}
 				});
-				for(let i=0; i<16; i++) {
+				for (let i = 0; i < 16; i++) {
 					const switchPad = this.shadowRoot.querySelector('#switchpad' + i);
 					switchPad.midiController = {};
 				}
 				const switchPads = this.shadowRoot.querySelectorAll('.switchpad');
 				//if current preset has midi learn, load midi learn from current preset, else load default midi mapping
-				if(localStorage.presets && PresetManager.getMidiLearnListFromCurrentPreset(currentPreset)){
+				if (localStorage.presets && PresetManager.getMidiLearnListFromCurrentPreset(currentPreset)) {
 					PresetManager.loadMidiControllerFromCurrentPreset(currentPreset, switchPads);
 					switchPads.forEach((switchPad) => {
 						const index = switchPad.id.match(/\d+/g)[0];
 						const currentMidiLearn = PresetManager.getMidiLearnFromCurrentPreset(currentPreset, switchPad.id);
-						if(currentMidiLearn.cc.cc === undefined) {
-							if(switchPad.querySelector('.button_midi_note')){
+						if (currentMidiLearn.cc.cc === undefined) {
+							if (switchPad.querySelector('.button_midi_note')) {
 								switchPad.querySelector('.button_midi_note').remove();
 							}
 						}
@@ -2661,15 +2682,15 @@ export default class SamplerHTMLElement extends HTMLElement {
 					this.defaultMidiMapping();
 				}
 			});
-		bl.load();
+			bl.load();
 		}
 		// if local Storage doesn't have presets item, load the selected preset from factory presets
 		if (!localStorage.getItem("presets")) {
-			if(presetValue.name) {
+			if (presetValue.name) {
 				presetValue = presetValue.name;
 			}
-			
-			const currentPreset = PresetManager.getCurrentPreset(presetValue);	
+
+			const currentPreset = PresetManager.getCurrentPreset(presetValue);
 			SamplerHTMLElement.URLs = PresetManager.getPresetUrls(currentPreset);
 			SamplerHTMLElement.URLs = changePathToAbsolute(SamplerHTMLElement.URLs);
 			SamplerHTMLElement.name = PresetManager.getPresetUrlsNames(currentPreset);
@@ -2688,7 +2709,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 						window.requestAnimationFrame(this.handleAnimationFrame);
 					}
 				});
-				for(let i=0; i<16; i++) {
+				for (let i = 0; i < 16; i++) {
 					const switchPad = this.shadowRoot.querySelector('#switchpad' + i);
 					switchPad.midiController = {};
 				}
@@ -2696,14 +2717,14 @@ export default class SamplerHTMLElement extends HTMLElement {
 			});
 
 			bl.load();
-			if(!newDecodedSounds) this.defaultMidiMapping();
+			if (!newDecodedSounds) this.defaultMidiMapping();
 		}
 		this.defaultMidiMapping();
 		this.setDefaultPadsKeyValue();
 	}
 
-	promptUser = async() => {
-		if(!this.shadowRoot.querySelector('html-prompt')) {
+	promptUser = async () => {
+		if (!this.shadowRoot.querySelector('html-prompt')) {
 
 			const resultExplorerPads = this.shadowRoot.querySelectorAll('.resultExplorer');
 			//hide all resultExplorerPads
@@ -2751,11 +2772,11 @@ export default class SamplerHTMLElement extends HTMLElement {
 		}
 	}
 
-	 createNoteSet = () => {
+	createNoteSet = () => {
 		const noteSetBtn = this.shadowRoot.querySelector('#createNoteSet');
 		const selectMenuScale = this.shadowRoot.querySelector('#selectNoteSet');
 		const switchPads = this.shadowRoot.querySelectorAll('.switchpad');
-		
+
 		NoteSet.buildScaleMenu(selectMenuScale);
 
 		if ((!this.player) || (selectMenuScale.value === "")) {
@@ -2766,7 +2787,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 			if (selectMenuScale.value === "") {
 				noteSetBtn.disabled = true;
 			} else {
-				if(this.player) {
+				if (this.player) {
 					noteSetBtn.disabled = false;
 					noteSetBtn.classList.remove('element-disabled');
 				}
@@ -2775,24 +2796,24 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 		switchPads.forEach((switchPad) => {
 			switchPad.onclick = () => {
-				if(selectMenuScale.value !== "") {
+				if (selectMenuScale.value !== "") {
 					noteSetBtn.disabled = false;
 					noteSetBtn.classList.remove('element-disabled');
 				}
 			};
 		});
 
-		
-		noteSetBtn.onclick = async() => {
-			if(!this.player) {return};
+
+		noteSetBtn.onclick = async () => {
+			if (!this.player) { return };
 			const currentPlayer = this.player;
 
-			if(selectMenuScale.value === "") return;
-			
+			if (selectMenuScale.value === "") return;
+
 			const switchPads = this.shadowRoot.querySelectorAll('.switchpad');
 			let presetName;
 
-			if(this.promptAvailable) {
+			if (this.promptAvailable) {
 				presetName = prompt("Preset name :");
 
 				let stopExecution = false;
@@ -2805,7 +2826,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 				// if the preset name already exists, we ask the user if he wants to overwrite it
 				else if (PresetManager.getCurrentPreset(presetName)) {
 					// alert("Error : this preset name already exists");
-					if(!confirm("This preset name already exists. Do you want to overwrite it ?")){
+					if (!confirm("This preset name already exists. Do you want to overwrite it ?")) {
 						stopExecution = true;
 						return;
 					} else {
@@ -2818,23 +2839,23 @@ export default class SamplerHTMLElement extends HTMLElement {
 					return;
 				}
 
-				if(stopExecution) {return};
+				if (stopExecution) { return };
 			}
 			else {
 				const response = await this.promptUser();
-				if(response === "" || !response) return;
-				if(PresetManager.getCurrentPreset(response)) PresetManager.removePreset(response);
+				if (response === "" || !response) return;
+				if (PresetManager.getCurrentPreset(response)) PresetManager.removePreset(response);
 				presetName = response;
 			}
-			
+
 			//change the index of the player in the samplePlayers array
 			const playerIndex = this.samplePlayers.indexOf(currentPlayer);
-			
+
 			this.swapSample(playerIndex, 7);
 			const fundamentalIndex = 7;
 
 			this.samplePlayers.forEach((player, index) => {
-				if(player && player !== currentPlayer) {
+				if (player && player !== currentPlayer) {
 					//clean samplePlayer
 					this.deleteSample(index);
 				}
@@ -2842,12 +2863,12 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 			let namePlayer = SamplerHTMLElement.name[fundamentalIndex];
 			let rootNoteName;
-			if(namePlayer.match(/(?:^|\s)([A-G][#b]?[0-9]?)(?=\s|$)/)){
+			if (namePlayer.match(/(?:^|\s)([A-G][#b]?[0-9]?)(?=\s|$)/)) {
 				rootNoteName = namePlayer.match(/(?:^|\s)([A-G][#b]?[0-9]?)(?=\s|$)/)[0];
 				//delete space
 				rootNoteName = rootNoteName.replace(/\s/g, '');
 				//By default the octave is 4
-				if(!rootNoteName.match(/[0-9]/)){
+				if (!rootNoteName.match(/[0-9]/)) {
 					const octave = '4';
 					SamplerHTMLElement.name[fundamentalIndex] = SamplerHTMLElement.name[fundamentalIndex] + octave;
 				}
@@ -2861,7 +2882,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 			const scales = NoteSet.getScales();
 
 			const currentScale = scales.find(scale => scale.name === selectMenuScale.value);
-            if(!currentScale) return;
+			if (!currentScale) return;
 
 			const ascendingNotesSemitones = currentScale.notes.ascending.map(note => note.semitones);
 			const descendingNotesSemitones = currentScale.notes.descending.map(note => note.semitones);
@@ -2877,13 +2898,13 @@ export default class SamplerHTMLElement extends HTMLElement {
 			this.samplePlayers[fundamentalIndex] = newPlayer;
 			this.samplePlayers[fundamentalIndex] = NoteSet.setEffectsSamplePlayer(this.samplePlayers[fundamentalIndex], currentPlayer);
 
-			
+
 			let indexAscending = 1;
-			for(let i = fundamentalIndex + 1; i < switchPads.length; i++) {
+			for (let i = fundamentalIndex + 1; i < switchPads.length; i++) {
 				this.samplePlayers[i] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", newPlayer.newDecodedSound, this.plugin.audioNode, 0);
 				SamplerHTMLElement.name[i] = namePlayer.replace(rootNoteName, newNamesScale.ascending[indexAscending]);
 				SamplerHTMLElement.defaultName[i] = SamplerHTMLElement.defaultName[fundamentalIndex];
-				SamplerHTMLElement.URLs[i]= SamplerHTMLElement.URLs[fundamentalIndex];
+				SamplerHTMLElement.URLs[i] = SamplerHTMLElement.URLs[fundamentalIndex];
 
 				this.samplePlayers[i] = NoteSet.setEffectsSamplePlayer(this.samplePlayers[i], currentPlayer);
 
@@ -2894,11 +2915,11 @@ export default class SamplerHTMLElement extends HTMLElement {
 			}
 
 			let indexDescending = 1;
-			for(let i = fundamentalIndex - 1; i >= 0; i--) {
+			for (let i = fundamentalIndex - 1; i >= 0; i--) {
 				this.samplePlayers[i] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", newPlayer.newDecodedSound, this.plugin.audioNode, 0);
 				SamplerHTMLElement.name[i] = namePlayer.replace(rootNoteName, newNamesScale.descending[indexDescending]);
 				SamplerHTMLElement.defaultName[i] = SamplerHTMLElement.defaultName[fundamentalIndex];
-				SamplerHTMLElement.URLs[i]= SamplerHTMLElement.URLs[fundamentalIndex];
+				SamplerHTMLElement.URLs[i] = SamplerHTMLElement.URLs[fundamentalIndex];
 
 				this.samplePlayers[i] = NoteSet.setEffectsSamplePlayer(this.samplePlayers[i], currentPlayer);
 
@@ -2917,7 +2938,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 			const newDecodedSounds = [];
 			this.samplePlayers.forEach((player, index) => {
-				if(player) {
+				if (player) {
 					newDecodedSounds[index] = player.decodedSound;
 				}
 			});
@@ -2928,11 +2949,11 @@ export default class SamplerHTMLElement extends HTMLElement {
 	}
 
 
-	createPreset = async(type, switchPads) => {
+	createPreset = async (type, switchPads) => {
 		this.initKnobs();
 		let presetName;
-		
-		if(this.promptAvailable) {
+
+		if (this.promptAvailable) {
 			// Get the preset name
 			presetName = prompt("Preset name :");
 
@@ -2944,7 +2965,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 			// If the preset name already exists, we ask the user if he wants to overwrite it
 			else if (PresetManager.getCurrentPreset(presetName)) {
 				// alert("Error : this preset name already exists");
-				if(confirm("This preset name already exists. Do you want to overwrite it ?")){
+				if (confirm("This preset name already exists. Do you want to overwrite it ?")) {
 					PresetManager.removePreset(presetName);
 					PresetManager.createPreset(presetName, type, this.samplePlayers, SamplerHTMLElement, switchPads);
 					PresetManager.saveAllPresets();
@@ -2962,11 +2983,11 @@ export default class SamplerHTMLElement extends HTMLElement {
 			}
 		} else {
 			const response = await this.promptUser();
-				if(response === "") return;
-				if(PresetManager.getCurrentPreset(response)) PresetManager.removePreset(response);
-				presetName = response;
-				PresetManager.createPreset(presetName, type, this.samplePlayers, SamplerHTMLElement, switchPads);
-				PresetManager.saveAllPresets();
+			if (response === "") return;
+			if (PresetManager.getCurrentPreset(response)) PresetManager.removePreset(response);
+			presetName = response;
+			PresetManager.createPreset(presetName, type, this.samplePlayers, SamplerHTMLElement, switchPads);
+			PresetManager.saveAllPresets();
 		}
 
 		const presetSelectMenu = this.shadowRoot.querySelector('#selectPreset');
@@ -2974,7 +2995,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 		this.loadCurrentPreset(presetName);
 		this.shadowRoot.querySelector('#selectPreset').value = presetName;
-		
+
 	}
 
 	savePreset = () => {
@@ -2982,10 +3003,10 @@ export default class SamplerHTMLElement extends HTMLElement {
 		const preset = this.shadowRoot.querySelector('#selectPreset');
 		const presetName = preset.value;
 		PresetManager.savePresets(presetName, this.samplePlayers, SamplerHTMLElement);
-	
+
 		this.loadCurrentPreset(presetName);
-		
-		
+
+
 	}
 
 	getCurrentState = (presetName, samplePlayers) => {
@@ -3008,16 +3029,16 @@ export default class SamplerHTMLElement extends HTMLElement {
 		const presetSelectMenu = this.shadowRoot.querySelector('#selectPreset');
 		const switchPads = this.shadowRoot.querySelectorAll('.switchpad');
 
-		if(PresetManager.isFactoryPreset(preset)) {
+		if (PresetManager.isFactoryPreset(preset)) {
 			PresetManager.resetPreset(preset);
 			this.loadCurrentPreset(preset);
 		} else {
 			PresetManager.removePreset(preset);
 			PresetManager.resetAllMidiLearning();
-		
-			
+
+
 			PresetManager.buildPresetMenu(presetSelectMenu);
-			
+
 			this.loadCurrentPreset(presetSelectMenu.value);
 		}
 
@@ -3026,10 +3047,10 @@ export default class SamplerHTMLElement extends HTMLElement {
 	noteOnKey = (padbutton) => {
 		const numberRegex = /\d+/g;
 		const padIndex = +padbutton.id.match(numberRegex)[0];
-		
+
 
 		//call setValue method from webaudio-controls to change the Gui when key is pressed
-		if(padbutton.nodeName === 'WEBAUDIO-SWITCH') padbutton.setValue(1);
+		if (padbutton.nodeName === 'WEBAUDIO-SWITCH') padbutton.setValue(1);
 
 		this.player = this.samplePlayers[padIndex];
 		if (!this.player) return;
@@ -3057,14 +3078,14 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 		this.setLabel(padIndex, padbutton);
 
-		
+
 	}
 
 	noteOffKey = (padbutton) => {
-		
+
 		//call setValue method from webaudio-controls to change the Gui when key is up
-		if(padbutton.nodeName === 'WEBAUDIO-SWITCH') padbutton.setValue(0);
-		
+		if (padbutton.nodeName === 'WEBAUDIO-SWITCH') padbutton.setValue(0);
+
 		const numberRegex = /\d+/g;
 		const padIndex = +padbutton.id.match(numberRegex)[0];
 		if (!padbutton) return;
@@ -3080,8 +3101,8 @@ export default class SamplerHTMLElement extends HTMLElement {
 		const enableKeysBtn = this.shadowRoot.querySelector('#enableKeyboard');
 		let localEnableKeyboard = false;
 		enableKeysBtn.addEventListener('click', (e) => {
-			if(localEnableKeyboard) {
-				localEnableKeyboard= false;
+			if (localEnableKeyboard) {
+				localEnableKeyboard = false;
 				enableKeysBtn.textContent = "Keyboard OFF"
 				enableKeysBtn.classList.remove('choose');
 			} else {
@@ -3090,8 +3111,8 @@ export default class SamplerHTMLElement extends HTMLElement {
 				enableKeysBtn.classList.add('choose');
 			}
 		});
-		this.shadowRoot.addEventListener('keydown',(e) => {
-			if(!this.enableKeyboard || !localEnableKeyboard) return;
+		this.shadowRoot.addEventListener('keydown', (e) => {
+			if (!this.enableKeyboard || !localEnableKeyboard) return;
 			//cancel the event if it's a repeat -> sample playing in loop
 			if (e.repeat) {
 				e.preventDefault();
@@ -3149,7 +3170,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 			}
 		});
 
-		this.shadowRoot.addEventListener('keyup',(e) => {
+		this.shadowRoot.addEventListener('keyup', (e) => {
 			switch (e.code) {
 				case 'Digit1':
 					this.noteOffKey(this.shadowRoot.querySelector('#switchpad12'));
@@ -3203,10 +3224,10 @@ export default class SamplerHTMLElement extends HTMLElement {
 		});
 	}
 
-	setVelocity(){
+	setVelocity() {
 		const velocityBtn = this.shadowRoot.querySelector('#enableVelocity');
 		velocityBtn.onclick = () => {
-			if(!this.enableVelocity) {
+			if (!this.enableVelocity) {
 				velocityBtn.classList.add('choose');
 				velocityBtn.innerHTML = 'Velocity ON';
 				this.enableVelocity = true;
@@ -3217,7 +3238,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 			}
 		};
 	}
-	
+
 	setupMidiListeners(audioNode) {
 		console.log("setupMIDIEvents called at " + Date.now());
 		const wamNode = audioNode._wamNode;
@@ -3303,39 +3324,39 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 		let currentPad;
 		let padIndex;
-		
+
 		const numberRegex = /\d+/g;
 
-		if(localStorage.getItem("WebAudioControlsMidiLearn")) {
+		if (localStorage.getItem("WebAudioControlsMidiLearn")) {
 			//get current midi learn binding from local storage
 			let stockMidiLearn = localStorage.getItem("WebAudioControlsMidiLearn");
 			let listMidiLearn = JSON.parse(stockMidiLearn);
-			
+
 			// get the pad corresponding to the note passed in parameter
 			currentPad = listMidiLearn.find(pad => pad.cc.cc === note);
-			
+
 			if (!currentPad) return;
-		
+
 			padIndex = +currentPad.id.match(numberRegex)[0];
 			this.setMidiNoteName(padIndex, note);
 		}
-		
+
 		//if local storage is empty
 		else {
 			const switchpads = this.shadowRoot.querySelectorAll('webaudio-switch');
 			switchpads.forEach((pad) => {
-				if(pad.midiController.cc === note) {
+				if (pad.midiController.cc === note) {
 					currentPad = pad;
 				}
 			});
-			if(currentPad === undefined) return;
+			if (currentPad === undefined) return;
 			// filter the number in the id of the pad
 			padIndex = +currentPad.id.match(numberRegex)[0];
 		}
-		
+
 
 		const padbutton = this.shadowRoot.querySelector('#switchpad' + padIndex);
-		if(padbutton.nodeName === 'WEBAUDIO-SWITCH') padbutton.value = 1;
+		if (padbutton.nodeName === 'WEBAUDIO-SWITCH') padbutton.value = 1;
 
 		this.player = this.samplePlayers[padIndex];
 
@@ -3353,11 +3374,11 @@ export default class SamplerHTMLElement extends HTMLElement {
 		this.setKnobsEffects();
 
 		//if velocity is On
-		if(this.enableVelocity) {
+		if (this.enableVelocity) {
 			//set velocity to volumeGain
-			this.player.effects.volumeGain = parseFloat(velocity / 127);	
+			this.player.effects.volumeGain = parseFloat(velocity / 127);
 			this.shadowRoot.querySelector('#knob1').value = parseFloat(velocity / 127);
-		}  else {
+		} else {
 			this.shadowRoot.querySelector('#knob1').value = 0.5;
 		}
 
@@ -3391,11 +3412,11 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 	noteOff(note, tickStartTime) {
 
-		if(!localStorage.getItem("WebAudioControlsMidiLearn")) return;
+		if (!localStorage.getItem("WebAudioControlsMidiLearn")) return;
 		//get current midi learn binding from local storage
 		let stockMidiLearn = localStorage.getItem("WebAudioControlsMidiLearn");
 		let listMidiLearn = JSON.parse(stockMidiLearn);
-		
+
 		// get the pad corresponding to the note passed in parameter
 		let currentPad = listMidiLearn.find(pad => pad.cc.cc === note);
 
@@ -3406,7 +3427,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 		const padIndex = +currentPad.id.match(numberRegex)[0];
 
 		const padbutton = this.shadowRoot.querySelector('#switchpad' + padIndex);
-		if(padbutton.nodeName === 'WEBAUDIO-SWITCH') padbutton.value = 0;
+		if (padbutton.nodeName === 'WEBAUDIO-SWITCH') padbutton.value = 0;
 
 		if (!this.shadowRoot.querySelector('#switchpad' + padIndex)) return;
 		this.shadowRoot.querySelector('#switchpad' + padIndex).classList.remove('active');
