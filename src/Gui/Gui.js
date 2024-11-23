@@ -190,6 +190,10 @@ export default class SamplerHTMLElement extends HTMLElement {
 			this.plugin.audioNode.stateToRestore = null;
 		}
 
+		for (let i = 0; i < 4; i++) {
+			this.setSwitchPadHandler(i);
+		}
+
 	}
 	setWebAudioControlSpritesheetImages() {
 		let switches = this.shadowRoot.querySelectorAll('.switchpad');
@@ -1329,7 +1333,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 	setSwitchPadHandler(index) {
 		const switchPadHandler = this.shadowRoot.querySelector('#switchpadHandler' + index);
-	
+		console.log(index);
 		switchPadHandler.onmousedown = (e) => {
 			const allPads = this.shadowRoot.querySelectorAll('[id^="switchpadHandler"]');
 			allPads.forEach((pad, padIndex) => {
@@ -1342,13 +1346,12 @@ export default class SamplerHTMLElement extends HTMLElement {
 			this.loadCurrentPreset(currentPreset, index);
 		};
 	}
-	
+
 	setSwitchPad(index) {
 		const switchPad = this.shadowRoot.querySelector('#switchpad' + index);
 		const preset = this.shadowRoot.querySelector('#selectPreset').value;
 
 		const buttonText = document.createElement('p');
-
 		if (SamplerHTMLElement.URLs[index].includes('http') && SamplerHTMLElement.name[index]) {
 			buttonText.innerHTML = SamplerHTMLElement.name[index];
 		}
@@ -1559,14 +1562,16 @@ export default class SamplerHTMLElement extends HTMLElement {
 			presetSelectMenu.blur();
 			currentPresetName = presetSelectMenu.value;
 			this.loadCurrentPreset(currentPresetName, 0);
-
+			const pad = this.shadowRoot.querySelector('#switchpadHandler0');
+			if (pad) {
+				pad.value = 1;
+			}
 			this.initKnobs();
 
 		};
 	}
 
 	loadCurrentPreset(presetName, presetPage, newDecodedSounds) {
-		console.log('loadCurrentPreset', presetName, presetPage, newDecodedSounds);
 		this.shadowRoot.querySelector('#selectPreset').value = presetName;
 
 		this.plugin.audioNode.currentPreset = presetName;
@@ -1579,7 +1584,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 		const label = this.shadowRoot.querySelector('#labelSampleName');
 		label.style.cursor = 'default';
-
 		//reset the content of the switchpads
 		const switchPads = this.shadowRoot.querySelectorAll('.switchpad');
 		switchPads.forEach((switchPad) => {
@@ -1594,7 +1598,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 		//load current preset sounds
 		this.loadSounds(presetName, presetPage, newDecodedSounds);
-
 		//delete preset button
 		const deletePreset = this.shadowRoot.querySelector('#deletePreset');
 		let preset;
@@ -1632,7 +1635,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 	loadCurrentState(currentState) {
 		SamplerHTMLElement.URLs = changePathToAbsolute(PresetManager.getPresetUrls(currentState));
 		SamplerHTMLElement.defaultName = PresetManager.getPresetUrlsNames(currentState);
-
 
 		let bl = new BufferLoader(this.plugin.audioContext, SamplerHTMLElement.URLs, this.shadowRoot, (bufferList) => {
 
@@ -1692,7 +1694,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 		}
 
 		if (localStorage.presets) {
-
 			// if local storage has presets item, load the selected preset saved in local storage
 			const currentPreset = PresetManager.getCurrentPreset(presetValue);
 
@@ -1757,18 +1758,15 @@ export default class SamplerHTMLElement extends HTMLElement {
 			}
 			const currentPreset = PresetManager.getCurrentPreset(presetValue);
 			SamplerHTMLElement.URLs = PresetManager.getPresetUrls(currentPreset);
-			SamplerHTMLElement.URLs = changePathToAbsolute(SamplerHTMLElement.URLs);
-			SamplerHTMLElement.name = PresetManager.getPresetUrlsNames(currentPreset);
+			SamplerHTMLElement.URLs = changePathToAbsolute(SamplerHTMLElement.URLs).slice(16 * presetPage, 16 * presetPage + 16);
+			SamplerHTMLElement.name = PresetManager.getPresetUrlsNames(currentPreset).slice(16 * presetPage, 16 * presetPage + 16);
 			SamplerHTMLElement.defaultName = PresetManager.getPresetUrlsNames(PresetManager.getCurrentFactoryPreset(presetValue));
 			// on charge les sons par défaut
-			for (let i = 0; i < 4; i++) {
-				this.setSwitchPadHandler(i);
-			}
 			let bl = new BufferLoader(this.plugin.audioContext, SamplerHTMLElement.URLs, this.shadowRoot, (bufferList) => {
 				// on a chargé les sons, on stocke sous forme de tableau
 				this.decodedSounds = bufferList;
 				// Pour chaque son on créé un SamplePlayer
-				this.decodedSounds.slice(16 * presetPage, 16 * presetPage +16).forEach((decodedSound, index) => {
+				this.decodedSounds.forEach((decodedSound, index) => {
 					// Si bufferList est vide on passe au suivant
 					if (decodedSound != undefined) {
 						this.samplePlayers[index] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", decodedSound, this.plugin.audioNode, 0);
@@ -2080,9 +2078,9 @@ export default class SamplerHTMLElement extends HTMLElement {
 	getCurrentState = (presetName, samplePlayers) => {
 		this.plugin.audioNode.currentPreset = presetName;
 		this.plugin.audioNode.gui = this;
-
+		console.log("HER WE ARE GETTING CURRENT STATE", presetName);
 		const currentState = structuredClone(PresetManager.getCurrentPreset(presetName));
-		// console.log(currentState);
+		console.log(currentState);
 
 		currentState.samples = PresetManager.newSamples(SamplerHTMLElement.URLs, SamplerHTMLElement.name, SamplerHTMLElement.defaultName, samplePlayers);
 		currentState.midiLearn = PresetManager.getMidiPresetsFromLocalStorage();

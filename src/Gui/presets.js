@@ -236,7 +236,7 @@ export default class PresetManager {
         { url: "../../audio/Lo-Fi/perc6.wav", name: "Perc6"},
         { url: "../../audio/Lo-Fi/perc7.wav", name: "Perc7"},
         { url: "../../audio/Lo-Fi/perc8.wav", name: "Perc8"},
-        { url: "../../audio/Lo-Fi/perc8.wav", name: "Perc9"},
+        { url: "../../audio/Lo-Fi/perc9.wav", name: "Perc9"},
       ],
     },
     {

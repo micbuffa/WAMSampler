@@ -1,47 +1,47 @@
 <html lang="en">
+
 <head>
-                <meta charset="UTF-8" />
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <title>Simple host that loads a non bundled plugin</title>
-                <script type="module" src="./wam-host/wamHost.js"></script>
-                <script type="module" src="./wam-plugin/wamPlugin.js"></script>
-                <script>WebAudioControlsOptions = {
-                                useMidi:1,
-                                preserveMidiLearn:1,
-                          }</script>
-                <script>
-                                function saveProject() {
-                                        const wamPluginWCs = document.querySelectorAll("wam-plugin");
-                                        wamPluginWCs.forEach((pluginWC, index) => {
-                                                const samplerState = pluginWC.instance.audioNode.getState();
-                                                samplerState.WebAudioControlsMidiLearn = pluginWC.instance.audioNode.WebAudioControlsMidiLearn;
-                                                samplerState.apiKey = pluginWC.instance.audioNode.apiKey;
-                                                samplerState.presets = pluginWC.instance.audioNode.presets;
-                                                //localStorage.setItem(`samplerState${index}`, JSON.stringify(samplerState));
-                                                sessionStorage.setItem(`samplerState${index}`, JSON.stringify(samplerState));
-                                        });
-                                }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple host that loads a non bundled plugin</title>
+  <script type="module" src="./wam-host/wamHost.js"></script>
+  <script type="module" src="./wam-plugin/wamPlugin.js"></script>
+  <script>WebAudioControlsOptions = {
+      useMidi: 1,
+      preserveMidiLearn: 1,
+    }</script>
+  <script>
+    function saveProject() {
+      const wamPluginWCs = document.querySelectorAll("wam-plugin");
+      wamPluginWCs.forEach((pluginWC, index) => {
+        const samplerState = pluginWC.instance.audioNode.getState();
+        samplerState.WebAudioControlsMidiLearn = pluginWC.instance.audioNode.WebAudioControlsMidiLearn;
+        samplerState.apiKey = pluginWC.instance.audioNode.apiKey;
+        samplerState.presets = pluginWC.instance.audioNode.presets;
+        //localStorage.setItem(`samplerState${index}`, JSON.stringify(samplerState));
+        sessionStorage.setItem(`samplerState${index}`, JSON.stringify(samplerState));
+      });
+    }
 
-                                function loadProject() {
-                                        const wamPluginWCs = document.querySelectorAll("wam-plugin");
-                                        wamPluginWCs.forEach((pluginWC, index) => {
-                                                //const savedState = JSON.parse(localStorage.getItem(`samplerState${index}`));
-                                                const savedState = JSON.parse(sessionStorage.getItem(`samplerState${index}`));
-                                                if (savedState) {
-                                                        pluginWC.instance.audioNode.setState(savedState);
-                                                }
-                                        });
-                                }
+    function loadProject() {
+      const wamPluginWCs = document.querySelectorAll("wam-plugin");
+      wamPluginWCs.forEach((pluginWC, index) => {
+        //const savedState = JSON.parse(localStorage.getItem(`samplerState${index}`));
+        const savedState = JSON.parse(sessionStorage.getItem(`samplerState${index}`));
+        if (savedState) {
+          pluginWC.instance.audioNode.setState(savedState);
+        }
+      });
+    }
 
-                </script>
+  </script>
 </head>
 
-<body>  
-                <wam-host>       
-                                <wam-plugin id="sampler" src="./src/index.js"></wam-plugin>
-                                
-                </wam-host> 
-                <br>
-                <button onclick="saveProject()">Save Project</button>
-                <button onclick="loadProject()">Load Project</button>
+<body>
+ <wam-host>
+    <wam-plugin id="sampler" src="./src/index.js"></wam-plugin>
+</wam-host>
+  <br>
+  <button onclick="saveProject()">Save Project</button>
+  <button onclick="loadProject()">Load Project</button>
 </body>
