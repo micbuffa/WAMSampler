@@ -1333,7 +1333,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 	setSwitchPadHandler(index) {
 		const switchPadHandler = this.shadowRoot.querySelector('#switchpadHandler' + index);
-		console.log(index);
 		switchPadHandler.onmousedown = (e) => {
 			const allPads = this.shadowRoot.querySelectorAll('[id^="switchpadHandler"]');
 			allPads.forEach((pad, padIndex) => {
@@ -2078,9 +2077,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 	getCurrentState = (presetName, samplePlayers) => {
 		this.plugin.audioNode.currentPreset = presetName;
 		this.plugin.audioNode.gui = this;
-		console.log("HER WE ARE GETTING CURRENT STATE", presetName);
 		const currentState = structuredClone(PresetManager.getCurrentPreset(presetName));
-		console.log(currentState);
 
 		currentState.samples = PresetManager.newSamples(SamplerHTMLElement.URLs, SamplerHTMLElement.name, SamplerHTMLElement.defaultName, samplePlayers);
 		currentState.midiLearn = PresetManager.getMidiPresetsFromLocalStorage();

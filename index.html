@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simple host that loads a non bundled plugin</title>
+  <title>Simple host that loads a non-bundled plugin</title>
+  <style>
+    #mount > * {
+      transform: scale(0.5);
+      transform-origin: top left;
+      width: 200%;
+    }
+  </style>
   <script type="module" src="./wam-host/wamHost.js"></script>
   <script type="module" src="./wam-plugin/wamPlugin.js"></script>
   <script>WebAudioControlsOptions = {
@@ -33,15 +40,155 @@
         }
       });
     }
-
   </script>
 </head>
 
 <body>
- <wam-host>
-    <wam-plugin id="sampler" src="./src/index.js"></wam-plugin>
-</wam-host>
   <br>
   <button onclick="saveProject()">Save Project</button>
   <button onclick="loadProject()">Load Project</button>
+  <button id="btn-start">Start</button>
+  <button id="btn-note">Play a MIDI note</button>
+  <button id="btnNotes">Send Note List</button>
+  <button id="btnPattern">Add pattern to pianoroll</button>
+  
+  <wam-host>
+    <wam-plugin id="sampler" src="./src/index.js"></wam-plugin>
+  </wam-host>
+  
+  <main>
+    <div id="mount"></div>
+  </main>
+
+  <script>
+    const mount = document.querySelector('#mount');
+    const AudioContext = window.AudioContext || window.webkitAudioContext || false;
+    const audioContext = new AudioContext();
+
+    let pianoRollInstance, synthInstance;
+
+    // Initialize extensions for notes and patterns
+    const initExtensions = async () => {
+      window.WAMExtensions = window.WAMExtensions || {};
+      window.WAMExtensions.notes = new NoteExtension();
+      window.WAMExtensions.patterns = new PatternExtension();
+    }
+
+    (async () => {
+      const { default: initializeWamHost } = await import("https://www.webaudiomodules.com/sdk/2.0.0-alpha.6/src/initializeWamHost.js");
+      const [hostGroupId] = await initializeWamHost(audioContext);
+
+      const { default: PianoRollWAM } = await import('https://www.webaudiomodules.com/community/plugins/burns-audio/pianoroll/index.js');
+      pianoRollInstance = await PianoRollWAM.createInstance(hostGroupId, audioContext);
+      pianoRollInstance.audioNode.connect(audioContext.destination);
+
+      const pianoRollDomNode = await pianoRollInstance.createGui();
+      mount.appendChild(pianoRollDomNode);
+      
+      const wamPluginElement = document.querySelector('#sampler');
+      synthInstance = wamPluginElement.instance;
+      await synthInstance.initialize(hostGroupId, audioContext);
+
+      synthInstance.audioNode.connect(pianoRollInstance.audioNode);
+
+      // Register extensions
+      initExtensions();
+
+      // Register the mapping for the Notes extension
+      window.WAMExtensions.notes.addMapping(pianoRollInstance.audioNode.instanceId, [synthInstance.instanceId]);
+
+      // Button handlers
+      document.querySelector("#btn-start").onclick = () => {
+        if (audioContext.state !== "running") {
+          audioContext.resume();
+        }
+        if (document.querySelector("#btn-start").textContent === "Start") {
+          pianoRollInstance.audioNode.scheduleEvents({
+            type: 'wam-transport', data: {
+              playing: true,
+              timeSigDenominator: 4,
+              timeSigNumerator: 4,
+              currentBar: 0,
+              currentBarStarted: audioContext.currentTime,
+              tempo: 120
+            }
+          });
+          document.querySelector("#btn-start").textContent = "Stop";
+        } else {
+          pianoRollInstance.audioNode.scheduleEvents({
+            type: 'wam-transport', data: {
+              playing: false,
+              timeSigDenominator: 4,
+              timeSigNumerator: 4,
+              currentBar: 0,
+              currentBarStarted: audioContext.currentTime,
+              tempo: 120
+            }
+          });
+          document.querySelector("#btn-start").textContent = "Start";
+          audioContext.suspend();
+        }
+      }
+
+      document.querySelector("#btn-note").onclick = () => {
+        audioContext.resume();
+        synthInstance.audioNode.scheduleEvents({
+          type: 'wam-midi',
+          time: synthInstance.audioNode.context.currentTime,
+          data: {
+            bytes: new Uint8Array([0x90, 74, 100])
+          }
+        });
+        synthInstance.audioNode.scheduleEvents({
+          type: 'wam-midi',
+          time: synthInstance.audioNode.context.currentTime + 0.25,
+          data: {
+            bytes: new Uint8Array([0x80, 74, 100])
+          }
+        });
+      }
+
+      document.querySelector("#btnNotes").onclick = () => {
+        if (!(window.WAMExtensions && window.WAMExtensions.notes)) return;
+
+        let notes = [
+          {
+            blackKey: false,
+            name: "Kick",
+            number: 60
+          },
+          {
+            blackKey: false,
+            name: "Snare",
+            number: 61
+          }
+        ];
+        notes = notes.sort((a, b) => a.number - b.number);
+        window.WAMExtensions.notes.setNoteList(synthInstance.instanceId, notes);
+      }
+
+      document.querySelector("#btnPattern").onclick = () => {
+        if (!(window.WAMExtensions && window.WAMExtensions.patterns)) return;
+
+        const testPattern = {
+          "length": 96,
+          "notes": [
+            { "tick": 0, "number": 57, "duration": 6, "velocity": 100 },
+            { "tick": 12, "number": 58, "duration": 6, "velocity": 100 },
+            { "tick": 30, "number": 62, "duration": 6, "velocity": 100 },
+            { "tick": 36, "number": 58, "duration": 12, "velocity": 100 },
+            { "tick": 36, "number": 60, "duration": 6, "velocity": 100 },
+            { "tick": 48, "number": 56, "duration": 6, "velocity": 100 },
+            { "tick": 60, "number": 61, "duration": 18, "velocity": 100 },
+            { "tick": 72, "number": 54, "duration": 6, "velocity": 100 }
+          ]
+        };
+        
+        const delegatePianoRoll = window.WAMExtensions.patterns.getPatternViewDelegate(pianoRollInstance.audioNode.instanceId);
+        delegatePianoRoll.setPatternState("default", testPattern);
+      }
+    })();
+  </script>
 </body>
+
+</html>
