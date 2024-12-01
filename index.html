@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Simple host that loads a non-bundled plugin</title>
   <style>
-    #mount > * {
+    #mount>* {
       transform: scale(0.5);
       transform-origin: top left;
       width: 200%;
@@ -51,32 +51,128 @@
   <button id="btn-note">Play a MIDI note</button>
   <button id="btnNotes">Send Note List</button>
   <button id="btnPattern">Add pattern to pianoroll</button>
-  
-  <wam-host>
+
+  <!-- <wam-host>
     <wam-plugin id="sampler" src="./src/index.js"></wam-plugin>
-  </wam-host>
-  
+  </wam-host> -->
+
   <main>
     <div id="mount"></div>
   </main>
 
   <script>
-    const mount = document.querySelector('#mount');
-    const AudioContext = window.AudioContext || window.webkitAudioContext || false;
-    const audioContext = new AudioContext();
+    class NoteExtension {
+      constructor() {
+        this.noteDefinitions = new Map()
+        this.listeners = new Map()
+        this.pluginMapping = new Map()
+      }
 
-    let pianoRollInstance, synthInstance;
+      setNoteList(pluginId, notes) {
+        console.log("setNoteList pluginId = " + pluginId + " notes =" + notes)
+        if (notes) {
+          this.noteDefinitions.set(pluginId, notes)
+        } else {
+          this.noteDefinitions.delete(pluginId)
+        }
+        this.sendNoteLists()
+      }
 
-    // Initialize extensions for notes and patterns
+      addListener(pluginId, callback) {
+        console.log("pluginId = " + pluginId);
+        if (callback) {
+          this.listeners.set(pluginId, callback)
+        } else {
+          this.listeners.delete(pluginId)
+        }
+        this.sendNoteLists()
+      }
+
+      addMapping(destinationId, sourceIds) {
+        if (sourceIds) {
+          this.pluginMapping.set(destinationId, sourceIds)
+        } else {
+          this.pluginMapping.delete(destinationId)
+        }
+        this.sendNoteLists()
+      }
+
+      clearMapping() {
+        this.pluginMapping.clear()
+      }
+
+      sendNoteLists() {
+        console.log("sendNoteList")
+        this.pluginMapping.forEach((sourceIds, destinationId) => {
+          console.log("sourceId = " + sourceIds + " destinationId = " + destinationId)
+          let callback = this.listeners.get(destinationId)
+          if (callback) {
+            let noteListId = sourceIds.find((id) => this.noteDefinitions.has(id))
+            if (noteListId) {
+              callback(this.noteDefinitions.get(noteListId))
+            } else {
+              callback(undefined)
+            }
+          }
+        })
+      }
+    }
+
+    class PatternExtension {
+
+      constructor() {
+        this.delegates = new Map()
+      }
+
+      setPatternDelegate(pluginId, delegate) {
+        /* delegate is an object with methods : 
+              getPatternList: () => PatternEntry[]
+              createPattern: (id: string) => void
+              deletePattern: (id: string) => void
+              playPattern: (id: string | undefined) => void
+              getPatternState: (id: string) => any
+              setPatternState: (id: string, state: any) => any
+        */
+
+        if (delegate) {
+          this.delegates.set(pluginId, delegate)
+          console.log("### DANS setPatternDelegate plugin id = " + pluginId + "###")
+
+        } else {
+          this.delegates.delete(pluginId)
+        }
+      }
+
+      getPatternViewDelegate(pluginId) {
+        console.log("### This.delegate = " + this.delegates)
+        return this.delegates.get(pluginId)
+      }
+    }
+
     const initExtensions = async () => {
       window.WAMExtensions = window.WAMExtensions || {};
       window.WAMExtensions.notes = new NoteExtension();
       window.WAMExtensions.patterns = new PatternExtension();
     }
 
+    const mount = document.querySelector('#mount');
+
+    const audioContext = new AudioContext();
+    let pianoRollInstance, samplerInstance;
+
     (async () => {
+
+      initExtensions();
+
       const { default: initializeWamHost } = await import("https://www.webaudiomodules.com/sdk/2.0.0-alpha.6/src/initializeWamHost.js");
       const [hostGroupId] = await initializeWamHost(audioContext);
+
+      const { default: SamplerWAM } = await import('./src/index.js');
+      samplerInstance = await SamplerWAM.createInstance(hostGroupId, audioContext);
+      samplerInstance.audioNode.connect(audioContext.destination);
+
+      const samplerDomNode = await samplerInstance.createGui();
+      mount.appendChild(samplerDomNode);
 
       const { default: PianoRollWAM } = await import('https://www.webaudiomodules.com/community/plugins/burns-audio/pianoroll/index.js');
       pianoRollInstance = await PianoRollWAM.createInstance(hostGroupId, audioContext);
@@ -84,25 +180,20 @@
 
       const pianoRollDomNode = await pianoRollInstance.createGui();
       mount.appendChild(pianoRollDomNode);
-      
-      const wamPluginElement = document.querySelector('#sampler');
-      synthInstance = wamPluginElement.instance;
-      await synthInstance.initialize(hostGroupId, audioContext);
 
-      synthInstance.audioNode.connect(pianoRollInstance.audioNode);
+      pianoRollInstance.audioNode.connectEvents(samplerInstance.instanceId);
+      samplerInstance.audioNode.connect(audioContext.destination);
 
-      // Register extensions
-      initExtensions();
+      window.WAMExtensions.notes.addMapping(pianoRollInstance.audioNode.instanceId, [samplerInstance.instanceId]);
 
-      // Register the mapping for the Notes extension
-      window.WAMExtensions.notes.addMapping(pianoRollInstance.audioNode.instanceId, [synthInstance.instanceId]);
-
-      // Button handlers
-      document.querySelector("#btn-start").onclick = () => {
+      const startButton = document.querySelector("#btn-start");
+      startButton.onclick = () => {
+        console.log(audioContext.state)
         if (audioContext.state !== "running") {
           audioContext.resume();
         }
-        if (document.querySelector("#btn-start").textContent === "Start") {
+
+        if (startButton.textContent === "Start") {
           pianoRollInstance.audioNode.scheduleEvents({
             type: 'wam-transport', data: {
               playing: true,
@@ -113,8 +204,9 @@
               tempo: 120
             }
           });
-          document.querySelector("#btn-start").textContent = "Stop";
+          startButton.textContent = "Stop";
         } else {
+
           pianoRollInstance.audioNode.scheduleEvents({
             type: 'wam-transport', data: {
               playing: false,
@@ -125,23 +217,23 @@
               tempo: 120
             }
           });
-          document.querySelector("#btn-start").textContent = "Start";
+          startButton.textContent = "Start";
           audioContext.suspend();
         }
       }
 
       document.querySelector("#btn-note").onclick = () => {
         audioContext.resume();
-        synthInstance.audioNode.scheduleEvents({
+        samplerInstance.audioNode.scheduleEvents({
           type: 'wam-midi',
-          time: synthInstance.audioNode.context.currentTime,
+          time: samplerInstance.audioNode.context.currentTime,
           data: {
             bytes: new Uint8Array([0x90, 74, 100])
           }
         });
-        synthInstance.audioNode.scheduleEvents({
+        samplerInstance.audioNode.scheduleEvents({
           type: 'wam-midi',
-          time: synthInstance.audioNode.context.currentTime + 0.25,
+          time: samplerInstance.audioNode.context.currentTime + 0.25,
           data: {
             bytes: new Uint8Array([0x80, 74, 100])
           }
@@ -149,9 +241,12 @@
       }
 
       document.querySelector("#btnNotes").onclick = () => {
-        if (!(window.WAMExtensions && window.WAMExtensions.notes)) return;
+        if (!(window.WAMExtensions && window.WAMExtensions.notes)) {
+          return
+        }
 
         let notes = [
+
           {
             blackKey: false,
             name: "Kick",
@@ -161,29 +256,74 @@
             blackKey: false,
             name: "Snare",
             number: 61
-          }
-        ];
-        notes = notes.sort((a, b) => a.number - b.number);
-        window.WAMExtensions.notes.setNoteList(synthInstance.instanceId, notes);
+          },
+        ]
+        notes = notes.sort((a, b) => a.number - b.number)
+
+        window.WAMExtensions.notes.setNoteList(samplerInstance.instanceId, notes)
       }
 
+
       document.querySelector("#btnPattern").onclick = () => {
-        if (!(window.WAMExtensions && window.WAMExtensions.patterns)) return;
+        if (!(window.WAMExtensions && window.WAMExtensions.patterns)) {
+          return
+        }
 
         const testPattern = {
           "length": 96,
           "notes": [
-            { "tick": 0, "number": 57, "duration": 6, "velocity": 100 },
-            { "tick": 12, "number": 58, "duration": 6, "velocity": 100 },
-            { "tick": 30, "number": 62, "duration": 6, "velocity": 100 },
-            { "tick": 36, "number": 58, "duration": 12, "velocity": 100 },
-            { "tick": 36, "number": 60, "duration": 6, "velocity": 100 },
-            { "tick": 48, "number": 56, "duration": 6, "velocity": 100 },
-            { "tick": 60, "number": 61, "duration": 18, "velocity": 100 },
-            { "tick": 72, "number": 54, "duration": 6, "velocity": 100 }
+            {
+              "tick": 0,
+              "number": 57,
+              "duration": 6,
+              "velocity": 100
+            },
+            {
+              "tick": 12,
+              "number": 58,
+              "duration": 6,
+              "velocity": 100
+            },
+            {
+              "tick": 30,
+              "number": 62,
+              "duration": 6,
+              "velocity": 100
+            },
+            {
+              "tick": 36,
+              "number": 58,
+              "duration": 12,
+              "velocity": 100
+            },
+            {
+              "tick": 36,
+              "number": 60,
+              "duration": 6,
+              "velocity": 100
+            },
+            {
+              "tick": 48,
+              "number": 56,
+              "duration": 6,
+              "velocity": 100
+            },
+            {
+              "tick": 60,
+              "number": 61,
+              "duration": 18,
+              "velocity": 100
+            },
+            {
+              "tick": 72,
+              "number": 54,
+              "duration": 6,
+              "velocity": 100
+            }
           ]
-        };
-        
+        }
+
+        console.log("PianoRoll instance iD = " + pianoRollInstance.audioNode.instanceId)
         const delegatePianoRoll = window.WAMExtensions.patterns.getPatternViewDelegate(pianoRollInstance.audioNode.instanceId);
         delegatePianoRoll.setPatternState("default", testPattern);
       }
