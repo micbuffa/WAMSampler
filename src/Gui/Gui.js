@@ -184,8 +184,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 			this.loadCurrentPreset(state.presetName);
 			this.loadCurrentState(state.currentState);
 
-			console.log(state.currentState);
-
 			// remove state to restore
 			this.plugin.audioNode.stateToRestore = null;
 		}
@@ -1333,6 +1331,12 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 	setSwitchPadHandler(index) {
 		const switchPadHandler = this.shadowRoot.querySelector('#switchpadHandler' + index);
+		const buttonText = document.createElement('p');
+		buttonText.innerHTML = String.fromCharCode('A'.charCodeAt(0) + index);
+		buttonText.classList.add('button_text');
+		buttonText.id = 'button_text' + index;
+		switchPadHandler.innerHTML = '';
+		switchPadHandler.appendChild(buttonText);
 		switchPadHandler.onmousedown = (e) => {
 			const allPads = this.shadowRoot.querySelectorAll('[id^="switchpadHandler"]');
 			allPads.forEach((pad, padIndex) => {
@@ -1634,7 +1638,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 	loadCurrentState(currentState) {
 		SamplerHTMLElement.URLs = changePathToAbsolute(PresetManager.getPresetUrls(currentState));
 		SamplerHTMLElement.defaultName = PresetManager.getPresetUrlsNames(currentState);
-
 		let bl = new BufferLoader(this.plugin.audioContext, SamplerHTMLElement.URLs, this.shadowRoot, (bufferList) => {
 
 			this.decodedSounds = bufferList;
@@ -1780,7 +1783,15 @@ export default class SamplerHTMLElement extends HTMLElement {
 				}
 				this.defaultMidiMapping();
 			});
-
+			if (window.WAMExtensions && window.WAMExtensions.notes && window.WAMExtensions.patterns) {
+				let names = SamplerHTMLElement.name;
+				let notes = names.map((name, index) => ({
+					blackKey: false,
+					name: name,
+					number: 60 + index
+				}));
+				window.WAMExtensions.notes.setNoteList(samplerInstance.instanceId, notes);
+			}
 			bl.load();
 			if (!newDecodedSounds) this.defaultMidiMapping();
 		}

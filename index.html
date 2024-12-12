@@ -13,6 +13,9 @@
   </style>
   <script type="module" src="./wam-host/wamHost.js"></script>
   <script type="module" src="./wam-plugin/wamPlugin.js"></script>
+  <script src="./wam-extension/NoteExtension.js"></script>
+  <script src="./wam-extension/PatternExtension.js"></script>
+
   <script>WebAudioControlsOptions = {
       useMidi: 1,
       preserveMidiLearn: 1,
@@ -61,93 +64,6 @@
   </main>
 
   <script>
-    class NoteExtension {
-      constructor() {
-        this.noteDefinitions = new Map()
-        this.listeners = new Map()
-        this.pluginMapping = new Map()
-      }
-
-      setNoteList(pluginId, notes) {
-        console.log("setNoteList pluginId = " + pluginId + " notes =" + notes)
-        if (notes) {
-          this.noteDefinitions.set(pluginId, notes)
-        } else {
-          this.noteDefinitions.delete(pluginId)
-        }
-        this.sendNoteLists()
-      }
-
-      addListener(pluginId, callback) {
-        console.log("pluginId = " + pluginId);
-        if (callback) {
-          this.listeners.set(pluginId, callback)
-        } else {
-          this.listeners.delete(pluginId)
-        }
-        this.sendNoteLists()
-      }
-
-      addMapping(destinationId, sourceIds) {
-        if (sourceIds) {
-          this.pluginMapping.set(destinationId, sourceIds)
-        } else {
-          this.pluginMapping.delete(destinationId)
-        }
-        this.sendNoteLists()
-      }
-
-      clearMapping() {
-        this.pluginMapping.clear()
-      }
-
-      sendNoteLists() {
-        console.log("sendNoteList")
-        this.pluginMapping.forEach((sourceIds, destinationId) => {
-          console.log("sourceId = " + sourceIds + " destinationId = " + destinationId)
-          let callback = this.listeners.get(destinationId)
-          if (callback) {
-            let noteListId = sourceIds.find((id) => this.noteDefinitions.has(id))
-            if (noteListId) {
-              callback(this.noteDefinitions.get(noteListId))
-            } else {
-              callback(undefined)
-            }
-          }
-        })
-      }
-    }
-
-    class PatternExtension {
-
-      constructor() {
-        this.delegates = new Map()
-      }
-
-      setPatternDelegate(pluginId, delegate) {
-        /* delegate is an object with methods : 
-              getPatternList: () => PatternEntry[]
-              createPattern: (id: string) => void
-              deletePattern: (id: string) => void
-              playPattern: (id: string | undefined) => void
-              getPatternState: (id: string) => any
-              setPatternState: (id: string, state: any) => any
-        */
-
-        if (delegate) {
-          this.delegates.set(pluginId, delegate)
-          console.log("### DANS setPatternDelegate plugin id = " + pluginId + "###")
-
-        } else {
-          this.delegates.delete(pluginId)
-        }
-      }
-
-      getPatternViewDelegate(pluginId) {
-        console.log("### This.delegate = " + this.delegates)
-        return this.delegates.get(pluginId)
-      }
-    }
 
     const initExtensions = async () => {
       window.WAMExtensions = window.WAMExtensions || {};
@@ -188,7 +104,6 @@
 
       const startButton = document.querySelector("#btn-start");
       startButton.onclick = () => {
-        console.log(audioContext.state)
         if (audioContext.state !== "running") {
           audioContext.resume();
         }
@@ -201,12 +116,11 @@
               timeSigNumerator: 4,
               currentBar: 0,
               currentBarStarted: audioContext.currentTime,
-              tempo: 120
+              tempo: 90
             }
           });
           startButton.textContent = "Stop";
         } else {
-
           pianoRollInstance.audioNode.scheduleEvents({
             type: 'wam-transport', data: {
               playing: false,
@@ -214,7 +128,7 @@
               timeSigNumerator: 4,
               currentBar: 0,
               currentBarStarted: audioContext.currentTime,
-              tempo: 120
+              tempo: 90
             }
           });
           startButton.textContent = "Start";
@@ -238,29 +152,6 @@
             bytes: new Uint8Array([0x80, 74, 100])
           }
         });
-      }
-
-      document.querySelector("#btnNotes").onclick = () => {
-        if (!(window.WAMExtensions && window.WAMExtensions.notes)) {
-          return
-        }
-
-        let notes = [
-
-          {
-            blackKey: false,
-            name: "Kick",
-            number: 60
-          },
-          {
-            blackKey: false,
-            name: "Snare",
-            number: 61
-          },
-        ]
-        notes = notes.sort((a, b) => a.number - b.number)
-
-        window.WAMExtensions.notes.setNoteList(samplerInstance.instanceId, notes)
       }
 
 
@@ -323,7 +214,6 @@
           ]
         }
 
-        console.log("PianoRoll instance iD = " + pianoRollInstance.audioNode.instanceId)
         const delegatePianoRoll = window.WAMExtensions.patterns.getPatternViewDelegate(pianoRollInstance.audioNode.instanceId);
         delegatePianoRoll.setPatternState("default", testPattern);
       }
