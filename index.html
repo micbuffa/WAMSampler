@@ -16,60 +16,33 @@
   <script src="./wam-extension/NoteExtension.js"></script>
   <script src="./wam-extension/PatternExtension.js"></script>
 
-  <script>WebAudioControlsOptions = {
+  <script>
+    WebAudioControlsOptions = {
       useMidi: 1,
       preserveMidiLearn: 1,
-    }</script>
-  <script>
-    function saveProject() {
-      const wamPluginWCs = document.querySelectorAll("wam-plugin");
-      wamPluginWCs.forEach((pluginWC, index) => {
-        const samplerState = pluginWC.instance.audioNode.getState();
-        samplerState.WebAudioControlsMidiLearn = pluginWC.instance.audioNode.WebAudioControlsMidiLearn;
-        samplerState.apiKey = pluginWC.instance.audioNode.apiKey;
-        samplerState.presets = pluginWC.instance.audioNode.presets;
-        //localStorage.setItem(`samplerState${index}`, JSON.stringify(samplerState));
-        sessionStorage.setItem(`samplerState${index}`, JSON.stringify(samplerState));
-      });
-    }
-
-    function loadProject() {
-      const wamPluginWCs = document.querySelectorAll("wam-plugin");
-      wamPluginWCs.forEach((pluginWC, index) => {
-        //const savedState = JSON.parse(localStorage.getItem(`samplerState${index}`));
-        const savedState = JSON.parse(sessionStorage.getItem(`samplerState${index}`));
-        if (savedState) {
-          pluginWC.instance.audioNode.setState(savedState);
-        }
-      });
-    }
+    };
   </script>
 </head>
 
 <body>
   <br>
-  <button onclick="saveProject()">Save Project</button>
-  <button onclick="loadProject()">Load Project</button>
+  <button id="btn-save">Save Project</button>
+  <button id="btn-load">Load Project</button>
   <button id="btn-start">Start</button>
   <button id="btn-note">Play a MIDI note</button>
   <button id="btnNotes">Send Note List</button>
   <button id="btnPattern">Add pattern to pianoroll</button>
-
-  <!-- <wam-host>
-    <wam-plugin id="sampler" src="./src/index.js"></wam-plugin>
-  </wam-host> -->
 
   <main>
     <div id="mount"></div>
   </main>
 
   <script>
-
     const initExtensions = async () => {
       window.WAMExtensions = window.WAMExtensions || {};
       window.WAMExtensions.notes = new NoteExtension();
       window.WAMExtensions.patterns = new PatternExtension();
-    }
+    };
 
     const mount = document.querySelector('#mount');
 
@@ -77,7 +50,6 @@
     let pianoRollInstance, samplerInstance;
 
     (async () => {
-
       initExtensions();
 
       const { default: initializeWamHost } = await import("https://www.webaudiomodules.com/sdk/2.0.0-alpha.6/src/initializeWamHost.js");
@@ -101,6 +73,21 @@
       samplerInstance.audioNode.connect(audioContext.destination);
 
       window.WAMExtensions.notes.addMapping(pianoRollInstance.audioNode.instanceId, [samplerInstance.instanceId]);
+
+      document.querySelector("#btn-save").onclick = () => {
+        const samplerState = samplerInstance.audioNode.getState();
+        samplerState.WebAudioControlsMidiLearn = samplerInstance.audioNode.WebAudioControlsMidiLearn;
+        samplerState.apiKey = samplerInstance.audioNode.apiKey;
+        samplerState.presets = samplerInstance.audioNode.presets;
+        sessionStorage.setItem('samplerState', JSON.stringify(samplerState));
+      };
+
+      document.querySelector("#btn-load").onclick = () => {
+        const savedState = JSON.parse(sessionStorage.getItem('samplerState'));
+        if (savedState) {
+          samplerInstance.audioNode.setState(savedState);
+        }
+      };
 
       const startButton = document.querySelector("#btn-start");
       startButton.onclick = () => {
@@ -134,7 +121,7 @@
           startButton.textContent = "Start";
           audioContext.suspend();
         }
-      }
+      };
 
       document.querySelector("#btn-note").onclick = () => {
         audioContext.resume();
@@ -152,71 +139,30 @@
             bytes: new Uint8Array([0x80, 74, 100])
           }
         });
-      }
-
+      };
 
       document.querySelector("#btnPattern").onclick = () => {
         if (!(window.WAMExtensions && window.WAMExtensions.patterns)) {
-          return
+          return;
         }
 
         const testPattern = {
           "length": 96,
           "notes": [
-            {
-              "tick": 0,
-              "number": 57,
-              "duration": 6,
-              "velocity": 100
-            },
-            {
-              "tick": 12,
-              "number": 58,
-              "duration": 6,
-              "velocity": 100
-            },
-            {
-              "tick": 30,
-              "number": 62,
-              "duration": 6,
-              "velocity": 100
-            },
-            {
-              "tick": 36,
-              "number": 58,
-              "duration": 12,
-              "velocity": 100
-            },
-            {
-              "tick": 36,
-              "number": 60,
-              "duration": 6,
-              "velocity": 100
-            },
-            {
-              "tick": 48,
-              "number": 56,
-              "duration": 6,
-              "velocity": 100
-            },
-            {
-              "tick": 60,
-              "number": 61,
-              "duration": 18,
-              "velocity": 100
-            },
-            {
-              "tick": 72,
-              "number": 54,
-              "duration": 6,
-              "velocity": 100
-            }
+            { "tick": 0, "number": 57, "duration": 6, "velocity": 100 },
+            { "tick": 12, "number": 58, "duration": 6, "velocity": 100 },
+            { "tick": 30, "number": 62, "duration": 6, "velocity": 100 },
+            { "tick": 36, "number": 58, "duration": 12, "velocity": 100 },
+            { "tick": 36, "number": 60, "duration": 6, "velocity": 100 },
+            { "tick": 48, "number": 56, "duration": 6, "velocity": 100 },
+            { "tick": 60, "number": 61, "duration": 18, "velocity": 100 },
+            { "tick": 72, "number": 54, "duration": 6, "velocity": 100 }
           ]
-        }
+        };
 
         const delegatePianoRoll = window.WAMExtensions.patterns.getPatternViewDelegate(pianoRollInstance.audioNode.instanceId);
         delegatePianoRoll.setPatternState("default", testPattern);
-      }
+      };
     })();
   </script>
 </body>
