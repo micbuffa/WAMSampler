@@ -94,7 +94,6 @@
         if (audioContext.state !== "running") {
           audioContext.resume();
         }
-
         if (startButton.textContent === "Start") {
           pianoRollInstance.audioNode.scheduleEvents({
             type: 'wam-transport', data: {

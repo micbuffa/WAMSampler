@@ -53,7 +53,6 @@ export default class SamplePlayer {
 
     play() {
         this.startTime = this.ctx.currentTime;
-
         this.bufferSource = this.ctx.createBufferSource();
         this.bufferSource.buffer = this.decodedSound;
         //this.bufferSource.playbackRate.value = this.effects.pitchRate;
