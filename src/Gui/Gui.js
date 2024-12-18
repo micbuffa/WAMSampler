@@ -866,45 +866,46 @@ export default class SamplerHTMLElement extends HTMLElement {
 		div2.replaceChild(clonedProgress1, progressPad2);
 		div1.querySelector('.padprogress').id = 'progress' + index1;
 		div2.querySelector('.padprogress').id = 'progress' + index2;
+		let tempIndex1 = Number(index1) + 16 * this.presetPage;
+		let tempIndex2 = Number(index2) + 16 * this.presetPage;
+		if (SamplerHTMLElement.URLs[tempIndex2] === undefined) {
+			SamplerHTMLElement.URLs[tempIndex2] = '';
+		}
+		if (SamplerHTMLElement.URLs[tempIndex1] === undefined) {
+			SamplerHTMLElement.URLs[tempIndex1] = '';
+		}
 
-		if (SamplerHTMLElement.URLs[index2] === undefined) {
-			SamplerHTMLElement.URLs[index2] = '';
+		if (SamplerHTMLElement.name[tempIndex2] === undefined) {
+			SamplerHTMLElement.name[tempIndex2] = '';
 		}
-		if (SamplerHTMLElement.URLs[index1] === undefined) {
-			SamplerHTMLElement.URLs[index1] = '';
-		}
-
-		if (SamplerHTMLElement.name[index2] === undefined) {
-			SamplerHTMLElement.name[index2] = '';
-		}
-		if (SamplerHTMLElement.name[index1] === undefined) {
-			SamplerHTMLElement.name[index1] = '';
+		if (SamplerHTMLElement.name[tempIndex1] === undefined) {
+			SamplerHTMLElement.name[tempIndex1] = '';
 		}
 
 		//Swap urls
-		const tempURL = SamplerHTMLElement.URLs[index1];
-		SamplerHTMLElement.URLs[index1] = SamplerHTMLElement.URLs[index2];
-		SamplerHTMLElement.URLs[index2] = tempURL;
+		const tempURL = SamplerHTMLElement.URLs[tempIndex1];
+		SamplerHTMLElement.URLs[tempIndex1] = SamplerHTMLElement.URLs[tempIndex2];
+		SamplerHTMLElement.URLs[tempIndex2] = tempURL;
 
 		//Swap names
-		const tempName = SamplerHTMLElement.name[index1];
-		SamplerHTMLElement.name[index1] = SamplerHTMLElement.name[index2]
-		SamplerHTMLElement.name[index2] = tempName;
+		const tempName = SamplerHTMLElement.name[tempIndex1];
+		SamplerHTMLElement.name[tempIndex1] = SamplerHTMLElement.name[tempIndex2]
+		SamplerHTMLElement.name[tempIndex2] = tempName;
 
 		//Swap default names
-		const tempDefaultName = SamplerHTMLElement.defaultName[index1];
-		SamplerHTMLElement.defaultName[index1] = SamplerHTMLElement.defaultName[index2];
-		SamplerHTMLElement.defaultName[index2] = tempDefaultName;
+		const tempDefaultName = SamplerHTMLElement.defaultName[tempIndex1];
+		SamplerHTMLElement.defaultName[tempIndex1] = SamplerHTMLElement.defaultName[tempIndex2];
+		SamplerHTMLElement.defaultName[tempIndex2] = tempDefaultName;
 
 		// Swap SamplePlayers
-		const tempPlayer = this.samplePlayers[index1];
-		this.samplePlayers[index1] = this.samplePlayers[index2];
-		this.samplePlayers[index2] = tempPlayer;
+		const tempPlayer = this.samplePlayers[tempIndex1];
+		this.samplePlayers[tempIndex1] = this.samplePlayers[tempIndex2];
+		this.samplePlayers[tempIndex2] = tempPlayer;
 
 		if (!button1.querySelector(".button_text")) {
 			const buttonText = document.createElement("p");
 			buttonText.classList.add("button_text");
-			buttonText.id = "button_text" + index1;
+			buttonText.id = "button_text" + tempIndex1;
 			button1.innerHTML = "";
 			button1.appendChild(buttonText);
 		}
@@ -912,19 +913,19 @@ export default class SamplerHTMLElement extends HTMLElement {
 		if (!button2.querySelector(".button_text")) {
 			const buttonText = document.createElement("p");
 			buttonText.classList.add("button_text");
-			buttonText.id = "button_text" + index2;
+			buttonText.id = "button_text" + tempIndex2;
 			button2.innerHTML = "";
 			button2.appendChild(buttonText);
 		}
 
 		if (!button1.classList.contains('set')) {
-			this.setSwitchPad(index1);
+			this.setSwitchPad(tempIndex1);
 			button1.classList.remove('selected');
 		}
 
 		if (!button2.classList.contains('set')) {
-			this.setSwitchPad(index2);
-			this.setLabel(index2, button2);
+			this.setSwitchPad(tempIndex2);
+			this.setLabel(tempIndex2, button2);
 			button2.classList.add('selected');
 		}
 
@@ -962,15 +963,18 @@ export default class SamplerHTMLElement extends HTMLElement {
 		newProgressPad.classList.replace('progressExplorer', 'padprogress');
 		newProgressPad.id = 'progress' + index2;
 
+		let tempIndex1 = Number(index1) + 16 * this.presetPage;
+		let tempIndex2 = Number(index2) + 16 * this.presetPage;
+
 		// get the url of the sound back
-		SamplerHTMLElement.URLs[index2] = url;
+		SamplerHTMLElement.URLs[tempIndex2] = url;
 
 		// get the name of the sound back
-		SamplerHTMLElement.name[index2] = button.innerHTML;
-		SamplerHTMLElement.defaultName[index2] = button.innerHTML;
+		SamplerHTMLElement.name[tempIndex2] = button.innerHTML;
+		SamplerHTMLElement.defaultName[tempIndex2] = button.innerHTML;
 
 		//recreate a new SamplePlayer independant of the explorer
-		this.samplePlayers[index2] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", this.explorerDecodedSounds[index1], this.plugin.audioNode, 0);
+		this.samplePlayers[tempIndex2] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", this.explorerDecodedSounds[tempIndex1], this.plugin.audioNode, 0);
 
 		// set pads
 		if (padElement === 'WEBAUDIO-SWITCH') {
@@ -988,7 +992,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 		}
 
 		// update player
-		this.player = this.samplePlayers[index2];
+		this.player = this.samplePlayers[tempIndex2];
 		this.shadowRoot.querySelector('#labelSampleName').innerHTML = button.innerHTML;
 		this.player.drawWaveform();
 
@@ -1017,7 +1021,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 
 	setResultSound = (index, name, url) => {
-		console.log("yes")
 		// add a div resultExplorer for each sound
 		const div = document.createElement('div');
 		div.classList.add('resultExplorer');
@@ -1340,7 +1343,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 		switchPadHandler.onmousedown = (e) => {
 			const allPads = this.shadowRoot.querySelectorAll('[id^="switchpadHandler"]');
 			this.presetPage = index;
-			console.log(this.presetPage);
 			allPads.forEach((pad, padIndex) => {
 				if (padIndex !== index) {
 					pad.value = 0;
@@ -1368,7 +1370,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 		//buttonText.innerHTML = switchPad.textContent;
 		switchPad.innerHTML = '';
 		switchPad.appendChild(buttonText);
-
 		// Add a button to delete the sample in the top right corner
 		if (buttonText && buttonText.innerHTML !== "") {
 			const deleteSample = document.createElement('button');
@@ -1574,7 +1575,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 				if (padIndex !== 0) {
 					pad.value = 0;
 				}
-				else{
+				else {
 					pad.value = 1;
 				}
 			});
@@ -1590,7 +1591,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 		this.plugin.audioNode.gui = this;
 
 		this.samplePlayers = [];
-		if(!samePage){this.tempPlayer = [];}
+		if (!samePage) { this.tempPlayer = []; }
 		this.player = null;
 		this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.canvasContextOverlay.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -1782,7 +1783,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 					// Si bufferList est vide on passe au suivant
 					if (decodedSound != undefined) {
 						this.samplePlayers[index] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", decodedSound, this.plugin.audioNode, 0);
-						if(this.tempPlayer.length > 0){
+						if (this.tempPlayer.length > 0) {
 							this.samplePlayers[index] = this.tempPlayer[index];
 						}
 						if (index >= this.presetPage * 16 && index < 16 + this.presetPage * 16) {
@@ -1797,6 +1798,13 @@ export default class SamplerHTMLElement extends HTMLElement {
 				}
 				this.defaultMidiMapping();
 			});
+			for (let i = 0; i <= 16 + 16 * this.presetPage - SamplerHTMLElement.URLs.length; i++) {
+				const switchPad = this.shadowRoot.querySelector('#switchpad' + i);
+				if (switchPad) {
+					switchPad.onmousedown = null;
+				}
+			}
+
 			if (window.WAMExtensions && window.WAMExtensions.notes && window.WAMExtensions.patterns) {
 				let names = SamplerHTMLElement.name.slice(this.presetPage * 16, 16 + this.presetPage * 16);
 				let notes = names.map((name, index) => ({
@@ -1846,7 +1854,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 			MIDI.classList.remove('choose');
 
 			promptElement.addEventListener('focus', (e) => {
-				console.log("focus");
 				this.enableKeyboard = false;
 			})
 			promptElement.addEventListener('promptClosed', (e) => {
@@ -2441,7 +2448,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 		const padbutton = this.shadowRoot.querySelector('#switchpad' + padIndex);
 		if (padbutton.nodeName === 'WEBAUDIO-SWITCH') padbutton.value = 1;
 
-		this.player = this.samplePlayers[padIndex];
+		this.player = this.samplePlayers[padIndex + 16 * this.presetPage];
 
 		// if the player doesn't exist, we stop the function
 		if (!this.player) return;
@@ -2513,7 +2520,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 		if (!this.shadowRoot.querySelector('#switchpad' + padIndex)) return;
 		this.shadowRoot.querySelector('#switchpad' + padIndex).classList.remove('active');
-		this.player = this.samplePlayers[padIndex];
+		this.player = this.samplePlayers[padIndex + 16 * this.presetPage];
 		if ((!this.player) || (!this.player.enableAdsr)) { return };
 		if (this.player.enableAdsr) this.player.releaseEnv();
 	}
