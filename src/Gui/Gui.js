@@ -1117,13 +1117,13 @@ export default class SamplerHTMLElement extends HTMLElement {
 	}
 
 	setDefaultPadKeyValue(index) {
-		const switchPad = this.shadowRoot.querySelector('#switchpad' + index)
+		const switchPad = this.shadowRoot.querySelector('#switchpad' + index % 16)
 		const buttonKeyValue = document.createElement('div');
 		if (switchPad.querySelector('.button_key_text')) return;
 		buttonKeyValue.classList.add('button_key_text');
-		buttonKeyValue.id = 'button_key_text' + index;
+		buttonKeyValue.id = 'button_key_text' + index % 16;
 		const keyArr = ['W/Z', 'X', 'C', 'V', 'Q/A', 'S', 'D', 'F', 'A/Q', 'Z/W', 'E', 'R', '1', '2', '3', '4'];
-		buttonKeyValue.innerHTML = keyArr[index];
+		buttonKeyValue.innerHTML = keyArr[index % 16];
 		switchPad.appendChild(buttonKeyValue);
 	}
 
@@ -1787,7 +1787,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 							this.samplePlayers[index] = this.tempPlayer[index];
 						}
 						if (index >= this.presetPage * 16 && index < 16 + this.presetPage * 16) {
-							this.setSwitchPad(index); this.setDefaultPadKeyValue(index % 16);
+							this.setSwitchPad(index); this.setDefaultPadKeyValue(index);
 						}
 						window.requestAnimationFrame(this.handleAnimationFrame);
 					}

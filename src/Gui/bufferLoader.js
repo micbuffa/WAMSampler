@@ -54,7 +54,7 @@ BufferLoader.prototype.loadBuffer = function(url, index, isPad) {
                 //var percent = (e.loaded * 100) / e.total;
 
                 //console.log("loaded " + percent  + "of song " + index);
-                var progress = this.root.querySelector("#progress" + index);
+                var progress = this.root.querySelector("#progress" + index%16);
                 progress.value = e.loaded;
                 progress.max = e.total;
             }
@@ -68,7 +68,7 @@ BufferLoader.prototype.loadBuffer = function(url, index, isPad) {
                 //var percent = (e.loaded * 100) / e.total;
 
                 //console.log("loaded " + percent  + "of song " + index);
-                var progress = this.root.querySelector("#progressExplorer" + index);
+                var progress = this.root.querySelector("#progressExplorer" + index%16);
                 progress.value = e.loaded;
                 progress.max = e.total;
             }
