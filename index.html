@@ -31,7 +31,12 @@
   <button id="btn-start">Start</button>
   <button id="btn-note">Play a MIDI note</button>
   <button id="btnNotes">Send Note List</button>
-  <button id="btnPattern">Add pattern to pianoroll</button>
+  <select id="pattern-select">
+    <option value="hip-hop">Hip-Hop</option>
+    <option value="reggaeton">Reggaeton</option>
+  </select>
+  <button id="btn-apply-pattern">Apply Pattern</button>
+
 
   <main>
     <div id="mount"></div>
@@ -140,24 +145,112 @@
         });
       };
 
-      document.querySelector("#btnPattern").onclick = () => {
+      document.querySelector("#btn-apply-pattern").onclick = () => {
         if (!(window.WAMExtensions && window.WAMExtensions.patterns)) {
           return;
         }
 
-        const testPattern = {
-          "length": 96,
-          "notes": [
-            { "tick": 0, "number": 57, "duration": 6, "velocity": 100 },
-            { "tick": 12, "number": 58, "duration": 6, "velocity": 100 },
-            { "tick": 30, "number": 62, "duration": 6, "velocity": 100 },
-            { "tick": 36, "number": 58, "duration": 12, "velocity": 100 },
-            { "tick": 36, "number": 60, "duration": 6, "velocity": 100 },
-            { "tick": 48, "number": 56, "duration": 6, "velocity": 100 },
-            { "tick": 60, "number": 61, "duration": 18, "velocity": 100 },
-            { "tick": 72, "number": 54, "duration": 6, "velocity": 100 }
-          ]
-        };
+        const patternSelect = document.querySelector("#pattern-select");
+        const selectedPattern = patternSelect.value;
+
+        let testPattern;
+
+        if (selectedPattern === "hip-hop") {
+          testPattern = {
+            "length": 96,
+            "notes": [
+              { "tick": 0, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 42, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 78, "number": 60, "duration": 6, "velocity": 100 },
+
+              { "tick": 24, "number": 61, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 61, "duration": 6, "velocity": 100 },
+
+              { "tick": 24, "number": 62, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 62, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 12, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 24, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 36, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 48, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 60, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 84, "number": 64, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 18, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 36, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 65, "duration": 6, "velocity": 100 },
+
+              { "tick": 48, "number": 66, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 67, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 69, "duration": 6, "velocity": 100 },
+
+              { "tick": 12, "number": 71, "duration": 6, "velocity": 100 },
+
+              { "tick": 60, "number": 72, "duration": 6, "velocity": 100 },
+
+              { "tick": 36, "number": 73, "duration": 6, "velocity": 100 },
+
+              { "tick": 24, "number": 74, "duration": 6, "velocity": 100 },
+            ]
+          };
+        } else if (selectedPattern === "reggaeton") {
+          testPattern = {
+            "length": 96,
+            "notes": [
+              { "tick": 0, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 42, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 78, "number": 60, "duration": 6, "velocity": 100 },
+
+              { "tick": 36, "number": 62, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 62, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 62, "duration": 6, "velocity": 100 },
+              { "tick": 90, "number": 62, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 6, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 18, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 24, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 30, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 78, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 90, "number": 63, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 12, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 24, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 36, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 48, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 60, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 84, "number": 64, "duration": 6, "velocity": 100 },
+
+              { "tick": 36, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 90, "number": 65, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 6, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 18, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 24, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 30, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 42, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 60, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 78, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 84, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 90, "number": 67, "duration": 6, "velocity": 100 },
+            ]
+          };
+        }
 
         const delegatePianoRoll = window.WAMExtensions.patterns.getPatternViewDelegate(pianoRollInstance.audioNode.instanceId);
         delegatePianoRoll.setPatternState("default", testPattern);
