@@ -101,8 +101,10 @@ export default class SamplerHTMLElement extends HTMLElement {
 		// this.setupMidiListeners(this.plugin.audioNode);
 
 		this.samplePlayers = [];
-
 		this.tempPlayer = [];
+		this.tempURL = [];
+		this.tempName = [];
+		this.tempDefaultName = [];
 
 		this.presetPage = 0;
 
@@ -135,6 +137,7 @@ export default class SamplerHTMLElement extends HTMLElement {
 	}
 
 	connectedCallback() {
+		
 		this.setupMidiListeners(this.plugin.audioNode);
 		// get the canvas for the waveform
 		this.canvas = this.shadowRoot.querySelector('#myCanvas');
@@ -177,10 +180,15 @@ export default class SamplerHTMLElement extends HTMLElement {
 		this.updateMidiNoteValue();
 
 		this.setVelocity();
+		
+
+		for (let i = 3; i >= 0; i--) {
+			this.setSwitchPadHandler(i);
+		}
 
 		// add listeners on the select presets
 		// Check if there is a current state to restore, that could not be restored because the gui was npt built yet
-		if (this.plugin.audioNode.stateToRestore) {
+		/* if (this.plugin.audioNode.stateToRestore) {
 			let state = this.plugin.audioNode.stateToRestore;
 			//ask GUI to load the preset
 			// this.gui.loadCompletePreset(state.presetName);
@@ -189,11 +197,10 @@ export default class SamplerHTMLElement extends HTMLElement {
 
 			// remove state to restore
 			this.plugin.audioNode.stateToRestore = null;
-		}
-
-		for (let i = 3; i >= 0; i--) {
-			this.setSwitchPadHandler(i);
-		}
+		} */
+	
+		this.loadCurrentState(state.currentState);
+    
 
 	}
 	setWebAudioControlSpritesheetImages() {
@@ -1351,6 +1358,10 @@ export default class SamplerHTMLElement extends HTMLElement {
 			switchPadHandler.value = 1;
 			const currentPreset = this.shadowRoot.querySelector('#selectPreset').value;
 			this.tempPlayer = this.samplePlayers;
+			this.tempName = SamplerHTMLElement.name;
+			this.tempDefaultName = SamplerHTMLElement.defaultName;
+			this.tempURLs = SamplerHTMLElement.URLs;
+
 			this.loadCurrentPreset(currentPreset, null, true);
 		};
 	}
@@ -1358,7 +1369,6 @@ export default class SamplerHTMLElement extends HTMLElement {
 	setSwitchPad(index) {
 		const switchPad = this.shadowRoot.querySelector('#switchpad' + index % 16);
 		const preset = this.shadowRoot.querySelector('#selectPreset').value;
-
 		const buttonText = document.createElement('p');
 		if (SamplerHTMLElement.URLs[index].includes('http') && SamplerHTMLElement.name[index]) {
 			buttonText.innerHTML = SamplerHTMLElement.name[index];
@@ -1570,6 +1580,12 @@ export default class SamplerHTMLElement extends HTMLElement {
 			currentPresetName = presetSelectMenu.value;
 			this.presetPage = 0;
 			this.loadCurrentPreset(currentPresetName);
+			this.initKnobs();
+		};
+	}
+
+	loadCurrentPreset(presetName, newDecodedSounds, samePage = false) {
+		if(presetName!="blank preset" && samePage == false) {
 			const allPads = this.shadowRoot.querySelectorAll('[id^="switchpadHandler"]');
 			allPads.forEach((pad, padIndex) => {
 				if (padIndex !== 0) {
@@ -1579,19 +1595,13 @@ export default class SamplerHTMLElement extends HTMLElement {
 					pad.value = 1;
 				}
 			});
-			this.initKnobs();
-
-		};
-	}
-
-	loadCurrentPreset(presetName, newDecodedSounds, samePage = false) {
+		}
 		this.shadowRoot.querySelector('#selectPreset').value = presetName;
-
 		this.plugin.audioNode.currentPreset = presetName;
 		this.plugin.audioNode.gui = this;
-
+		
 		this.samplePlayers = [];
-		if (!samePage) { this.tempPlayer = []; }
+		//this.tempPlayer = [];
 		this.player = null;
 		this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.canvasContextOverlay.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -1652,10 +1662,10 @@ export default class SamplerHTMLElement extends HTMLElement {
 		let bl = new BufferLoader(this.plugin.audioContext, SamplerHTMLElement.URLs, this.shadowRoot, (bufferList) => {
 
 			this.decodedSounds = bufferList;
-
+			
 			this.decodedSounds.forEach((decodedSound, index) => {
-
 				if (decodedSound != undefined) {
+					
 					this.samplePlayers[index] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", decodedSound, this.plugin.audioNode, 0);
 					if (currentState.samples[index].player) {
 						SamplerHTMLElement.name[index] = currentState.samples[index].player.name;
@@ -1665,8 +1675,9 @@ export default class SamplerHTMLElement extends HTMLElement {
 					else if (currentState) {
 						SamplerHTMLElement.name[index] = currentState.samples[index].name;
 					}
-					this.setSwitchPad(index);
-					this.setDefaultPadKeyValue(index);
+					if (index >= this.presetPage * 16 && index < 16 + this.presetPage * 16) {
+						this.setSwitchPad(index); this.setDefaultPadKeyValue(index);
+					}
 					window.requestAnimationFrame(this.handleAnimationFrame);
 				}
 			});
@@ -1785,6 +1796,9 @@ export default class SamplerHTMLElement extends HTMLElement {
 						this.samplePlayers[index] = new SamplePlayer(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", decodedSound, this.plugin.audioNode, 0);
 						if (this.tempPlayer.length > 0) {
 							this.samplePlayers[index] = this.tempPlayer[index];
+							SamplerHTMLElement.name[index] = this.tempName[index];
+							SamplerHTMLElement.defaultName[index] = this.tempDefaultName[index];
+							SamplerHTMLElement.URLs[index] = this.tempURLs[index];							
 						}
 						if (index >= this.presetPage * 16 && index < 16 + this.presetPage * 16) {
 							this.setSwitchPad(index); this.setDefaultPadKeyValue(index);

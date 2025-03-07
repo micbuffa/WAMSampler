@@ -70,7 +70,10 @@ export default class SamplerNode extends CompositeAudioNode {
 		console.log("setState currentPreset = " + state.presetName);
 		//ask GUI to load the preset
 		// this.gui.loadCompletePreset(state.presetName);
-		this.gui.loadCurrentPreset(state.presetName);
+		setTimeout(() => {
+			this.gui.loadCurrentPreset(state.presetName);
+		}, 0);
+		
 		this.gui.loadCurrentState(state.currentState);
 	}
 	/**
