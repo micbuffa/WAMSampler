@@ -46,8 +46,8 @@ export class MIDI {
 	static CC = 0xB0;
 }
 
-let style = await fetch('src/Gui/style.css').then(response => response.text());
-let template = await fetch('src/Gui/template.html').then(response => response.text());
+let style = await fetch(getBaseURL()  + 'style.css').then(response => response.text());
+let template = await fetch(getBaseURL()  +'template.html').then(response => response.text());
 
 // The GUI is a WebComponent. Not mandatory but useful.
 // MANDORY : the GUI should be a DOM node. WebComponents are

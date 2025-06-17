@@ -85,6 +85,7 @@ export default class SamplerNode extends CompositeAudioNode {
  
 	setParamValue(name, value) {
 		return this._wamNode.setParamValue(name, value);
+		
 	}
 
 	getParamsValues() {
