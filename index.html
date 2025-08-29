@@ -11,8 +11,9 @@
       width: 200%;
     }
   </style>
-  <script type="module" src="./wam-host/wamHost.js"></script>
+  <!--<script type="module" src="./wam-host/wamHost.js"></script>
   <script type="module" src="./wam-plugin/wamPlugin.js"></script>
+-->
   <script src="./wam-extension/NoteExtension.js"></script>
   <script src="./wam-extension/PatternExtension.js"></script>
 
@@ -66,6 +67,19 @@
 
       const samplerDomNode = await samplerInstance.createGui();
       mount.appendChild(samplerDomNode);
+
+      // Change parameter for loading a default preset
+      // change default preset
+      console.log("Setting default preset to 1");
+    samplerInstance.audioNode.setParamValue("currentPreset",  1);
+     let values = await samplerInstance.audioNode.getParameterValues();
+      console.log("Current preset is now", values.currentPreset.value);
+      
+      //samplerInstance.audioNode.setParamValue("currentPreset",  0);
+      //console.log("Current preset is now", samplerInstance.audioNode.getParameterValues().currentPreset.value);
+      //samplerInstance.audioNode.setParamValue("currentPreset",  1);
+    
+  //console.log("Current preset is now", samplerInstance.audioNode.getParameterValues().currentPreset.value);
 
       const { default: PianoRollWAM } = await import('https://www.webaudiomodules.com/community/plugins/burns-audio/pianoroll/index.js');
       pianoRollInstance = await PianoRollWAM.createInstance(hostGroupId, audioContext);

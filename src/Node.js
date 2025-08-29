@@ -34,10 +34,10 @@ export default class SamplerNode extends CompositeAudioNode {
 
 
 	connectInitialNodes() {
-		this._output =this.outputNode;
+		this._output = this.outputNode;
 	}
 
-	
+
 	play(samplePlayer) {
 		// connect the samplePlayer to the plugin node graph, then start it
 		samplePlayer.connect(this.outputNode);
@@ -46,9 +46,9 @@ export default class SamplerNode extends CompositeAudioNode {
 		samplePlayer.start();
 	}
 
-	getState(){
-		
-		if(!this.gui) return {
+	getState() {
+
+		if (!this.gui) return {
 			presetName: this.currentPreset,
 		};
 
@@ -61,8 +61,8 @@ export default class SamplerNode extends CompositeAudioNode {
 		};
 	}
 
-	setState(state){
-		if(!this.gui) {
+	setState(state) {
+		if (!this.gui) {
 			this.stateToRestore = state;
 			return;
 		}
@@ -82,19 +82,22 @@ export default class SamplerNode extends CompositeAudioNode {
 	getParamValue(name) {
 		return this._wamNode.getParamValue(name);
 	}
- 
+
 	setParamValue(name, value) {
+		console.log("setParamValue", name, value);
 		return this._wamNode.setParamValue(name, value);
-		
+
 	}
 
 	getParamsValues() {
 		return this._wamNode.getParamsValues();
 	}
 
-	setParamsValues(values) {
+	setParamValues(values) {
+		console.log("setParamsValues", values);
+
 		return this._wamNode.setParamsValues(values);
 	}
 
-	
+
 }

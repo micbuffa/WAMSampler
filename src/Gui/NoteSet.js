@@ -1,4 +1,4 @@
-export default class NoteSet {
+export default class NoteSet2 {
   static scales = [
     {
       name: "Major",

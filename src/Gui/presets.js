@@ -1,4 +1,4 @@
-export default class PresetManager {
+export default class PresetManager2 {
   static presets = [
     {
       name: "Basic Kit",
@@ -317,16 +317,16 @@ export default class PresetManager {
 
   // load presets from LocalStorage
   static loadPresetsFactory() {
-    this.presets = JSON.parse(localStorage.getItem("presets"));
+    this.presets = JSON.parse(localStorage.getItem("Sampler2presets"));
   }
 
   static getPresetsFromLocalStorage() {
-    return JSON.parse(localStorage.getItem("presets"));
+    return JSON.parse(localStorage.getItem("Sampler2presets"));
   }
 
   static getCurrentPreset(presetName) {
     if(localStorage.presets) {
-      const presets = JSON.parse(localStorage.getItem("presets"));
+      const presets = JSON.parse(localStorage.getItem("Sampler2presets"));
       const currentPreset = presets.find(preset => preset.name === presetName);
       return currentPreset;
     }else {
@@ -410,14 +410,14 @@ export default class PresetManager {
 
   // save presets to LocalStorage
   static savePresets(presetName, samplePlayers, sampleHTMLElements) {
-    if(localStorage.getItem("presets")) {
-      this.presetsToSave = JSON.parse(localStorage.getItem("presets"));
+    if(localStorage.getItem("Sampler2presets")) {
+      this.presetsToSave = JSON.parse(localStorage.getItem("Sampler2presets"));
     }
     const presetToSave = this.presetsToSave.find((p) => p.name === presetName);
     presetToSave.samples = this.newSamples(sampleHTMLElements.URLs, sampleHTMLElements.name, sampleHTMLElements.defaultName, samplePlayers);
 
     presetToSave.midiLearn = this.getMidiPresetsFromLocalStorage();
-    localStorage.setItem("presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
   }
 
   static loadPlayerFromCurrentPreset(samplePlayer,index, currentPreset) {
@@ -452,18 +452,18 @@ export default class PresetManager {
 
   //save all presets
   static saveAllPresets() {
-    localStorage.setItem("presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
   }
 
   //load current preset from LocalStorage
   static loadCurrentPreset(presetValue) {
-    const presets = JSON.parse(localStorage.getItem("presets"));
+    const presets = JSON.parse(localStorage.getItem("Sampler2presets"));
     return presets.find(preset => preset.name === presetValue.name || preset.name === presetValue);
   }
 
   static isFactoryPreset(presetName) {
-    if(localStorage.getItem("presets")) {
-      this.presetsToSave = JSON.parse(localStorage.getItem("presets"));
+    if(localStorage.getItem("Sampler2presets")) {
+      this.presetsToSave = JSON.parse(localStorage.getItem("Sampler2presets"));
     }
     return this.presetsToSave.find((p) => p.name === presetName).isFactoryPresets;
   }
@@ -471,14 +471,14 @@ export default class PresetManager {
   //remove a preset from LocalStorage
   static removePreset(preset) {
     this.presetsToSave = this.presetsToSave.filter((p) => p.name !== preset);
-    localStorage.setItem("presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
   }
 
   static resetPreset (preset) {
     const factoryPreset = this.presets.find((p) => p.name === preset);
     const index = this.presets.findIndex((p) => p.name === preset);
     this.presetsToSave[index] = factoryPreset;
-    localStorage.setItem("presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
   }
 
   // clear presets from LocalStorage
@@ -621,7 +621,7 @@ export default class PresetManager {
      }
     });
     presetToSave.midiLearn = currentListMidiLearn;
-    localStorage.setItem("presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
   }
 
   static clearMidiMappingFromCurrentPreset(presetName) {
