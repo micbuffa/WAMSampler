@@ -1,48 +1,276 @@
 <html lang="en">
+
 <head>
-                <meta charset="UTF-8" />
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <title>Simple host that loads a non bundled plugin</title>
-                <script type="module" src="./wam-host/wamHost.js"></script>
-                <script type="module" src="./wam-plugin/wamPlugin.js"></script>
-                <script>WebAudioControlsOptions = {
-                                useMidi:1,
-                                preserveMidiLearn:1,
-                          }</script>
-                <script>
-                                function saveProject() {
-                                        const wamPluginWCs = document.querySelectorAll("wam-plugin");
-                                        wamPluginWCs.forEach((pluginWC, index) => {
-                                                const samplerState = pluginWC.instance.audioNode.getState();
-                                                samplerState.WebAudioControlsMidiLearn = pluginWC.instance.audioNode.WebAudioControlsMidiLearn;
-                                                samplerState.apiKey = pluginWC.instance.audioNode.apiKey;
-                                                samplerState.presets = pluginWC.instance.audioNode.presets;
-                                                //localStorage.setItem(`samplerState${index}`, JSON.stringify(samplerState));
-                                                sessionStorage.setItem(`samplerState${index}`, JSON.stringify(samplerState));
-                                        });
-                                }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple host that loads a non-bundled plugin</title>
+  <style>
+    #mount>* {
+      transform: scale(0.5);
+      transform-origin: top left;
+      width: 200%;
+    }
+  </style>
+  <!--<script type="module" src="./wam-host/wamHost.js"></script>
+  <script type="module" src="./wam-plugin/wamPlugin.js"></script>
+-->
+  <script src="./wam-extension/NoteExtension.js"></script>
+  <script src="./wam-extension/PatternExtension.js"></script>
 
-                                function loadProject() {
-                                        const wamPluginWCs = document.querySelectorAll("wam-plugin");
-                                        wamPluginWCs.forEach((pluginWC, index) => {
-                                                //const savedState = JSON.parse(localStorage.getItem(`samplerState${index}`));
-                                                const savedState = JSON.parse(sessionStorage.getItem(`samplerState${index}`));
-                                                if (savedState) {
-                                                        pluginWC.instance.audioNode.setState(savedState);
-                                                }
-                                        });
-                                }
-
-                </script>
+  <script>
+    WebAudioControlsOptions = {
+      useMidi: 1,
+      preserveMidiLearn: 1,
+    };
+  </script>
 </head>
 
-<body>  
-        <p>Try this freesound API Key (press save and reload sampler): <code>gWrbi0mUOoh7gaZgxp1Eh5rXB1hZ4UKZ2AnV8nqo</code></p>
-                <wam-host>       
-                                <wam-plugin id="sampler" src="./src/index.js"></wam-plugin>
-                                
-                </wam-host> 
-                <br>
-                <button onclick="saveProject()">Save Project</button>
-                <button onclick="loadProject()">Load Project</button>
+<body>
+  <br>
+  <button id="btn-save">Save Project</button>
+  <button id="btn-load">Load Project</button>
+  <button id="btn-start">Start</button>
+  <button id="btn-note">Play a MIDI note</button>
+  <button id="btnNotes">Send Note List</button>
+  <select id="pattern-select">
+    <option value="hip-hop">Hip-Hop</option>
+    <option value="reggaeton">Reggaeton</option>
+  </select>
+  <button id="btn-apply-pattern">Apply Pattern</button>
+
+
+  <main>
+    <div id="mount"></div>
+  </main>
+
+  <script>
+    const initExtensions = async () => {
+      window.WAMExtensions = window.WAMExtensions || {};
+      window.WAMExtensions.notes = new NoteExtension();
+      window.WAMExtensions.patterns = new PatternExtension();
+    };
+
+    const mount = document.querySelector('#mount');
+
+    const audioContext = new AudioContext();
+    let pianoRollInstance, samplerInstance;
+
+    (async () => {
+      initExtensions();
+
+      const { default: initializeWamHost } = await import("https://www.webaudiomodules.com/sdk/2.0.0-alpha.6/src/initializeWamHost.js");
+      const [hostGroupId] = await initializeWamHost(audioContext);
+
+      const { default: SamplerWAM } = await import('./src/index.js');
+      samplerInstance = await SamplerWAM.createInstance(hostGroupId, audioContext);
+      samplerInstance.audioNode.connect(audioContext.destination);
+
+      const samplerDomNode = await samplerInstance.createGui();
+      mount.appendChild(samplerDomNode);
+
+      // Change parameter for loading a default preset
+      // change default preset
+      console.log("Setting default preset to 1");
+    samplerInstance.audioNode.setParamValue("currentPreset",  1);
+     let values = await samplerInstance.audioNode.getParameterValues();
+      console.log("Current preset is now", values.currentPreset.value);
+      
+      //samplerInstance.audioNode.setParamValue("currentPreset",  0);
+      //console.log("Current preset is now", samplerInstance.audioNode.getParameterValues().currentPreset.value);
+      //samplerInstance.audioNode.setParamValue("currentPreset",  1);
+    
+  //console.log("Current preset is now", samplerInstance.audioNode.getParameterValues().currentPreset.value);
+
+      const { default: PianoRollWAM } = await import('https://www.webaudiomodules.com/community/plugins/burns-audio/pianoroll/index.js');
+      pianoRollInstance = await PianoRollWAM.createInstance(hostGroupId, audioContext);
+      pianoRollInstance.audioNode.connect(audioContext.destination);
+
+      const pianoRollDomNode = await pianoRollInstance.createGui();
+      mount.appendChild(pianoRollDomNode);
+
+      pianoRollInstance.audioNode.connectEvents(samplerInstance.instanceId);
+      samplerInstance.audioNode.connect(audioContext.destination);
+
+      window.WAMExtensions.notes.addMapping(pianoRollInstance.audioNode.instanceId, [samplerInstance.instanceId]);
+
+      document.querySelector("#btn-save").onclick = () => {
+        const samplerState = samplerInstance.audioNode.getState();
+        samplerState.WebAudioControlsMidiLearn = samplerInstance.audioNode.WebAudioControlsMidiLearn;
+        samplerState.apiKey = samplerInstance.audioNode.apiKey;
+        samplerState.presets = samplerInstance.audioNode.presets;
+        sessionStorage.setItem('samplerState', JSON.stringify(samplerState));
+      };
+
+      document.querySelector("#btn-load").onclick = () => {
+        const savedState = JSON.parse(sessionStorage.getItem('samplerState'));
+        if (savedState) {
+          samplerInstance.audioNode.setState(savedState);
+        }
+      };
+
+      const startButton = document.querySelector("#btn-start");
+      startButton.onclick = () => {
+        if (audioContext.state !== "running") {
+          audioContext.resume();
+        }
+        if (startButton.textContent === "Start") {
+          pianoRollInstance.audioNode.scheduleEvents({
+            type: 'wam-transport', data: {
+              playing: true,
+              timeSigDenominator: 4,
+              timeSigNumerator: 4,
+              currentBar: 0,
+              currentBarStarted: audioContext.currentTime,
+              tempo: 90
+            }
+          });
+          startButton.textContent = "Stop";
+        } else {
+          pianoRollInstance.audioNode.scheduleEvents({
+            type: 'wam-transport', data: {
+              playing: false,
+              timeSigDenominator: 4,
+              timeSigNumerator: 4,
+              currentBar: 0,
+              currentBarStarted: audioContext.currentTime,
+              tempo: 90
+            }
+          });
+          startButton.textContent = "Start";
+          audioContext.suspend();
+        }
+      };
+
+      document.querySelector("#btn-note").onclick = () => {
+        audioContext.resume();
+        samplerInstance.audioNode.scheduleEvents({
+          type: 'wam-midi',
+          time: samplerInstance.audioNode.context.currentTime,
+          data: {
+            bytes: new Uint8Array([0x90, 74, 100])
+          }
+        });
+        samplerInstance.audioNode.scheduleEvents({
+          type: 'wam-midi',
+          time: samplerInstance.audioNode.context.currentTime + 0.25,
+          data: {
+            bytes: new Uint8Array([0x80, 74, 100])
+          }
+        });
+      };
+
+      document.querySelector("#btn-apply-pattern").onclick = () => {
+        if (!(window.WAMExtensions && window.WAMExtensions.patterns)) {
+          return;
+        }
+
+        const patternSelect = document.querySelector("#pattern-select");
+        const selectedPattern = patternSelect.value;
+
+        let testPattern;
+
+        if (selectedPattern === "hip-hop") {
+          testPattern = {
+            "length": 96,
+            "notes": [
+              { "tick": 0, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 42, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 78, "number": 60, "duration": 6, "velocity": 100 },
+
+              { "tick": 24, "number": 61, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 61, "duration": 6, "velocity": 100 },
+
+              { "tick": 24, "number": 62, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 62, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 12, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 24, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 36, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 48, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 60, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 84, "number": 64, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 18, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 36, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 65, "duration": 6, "velocity": 100 },
+
+              { "tick": 48, "number": 66, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 67, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 69, "duration": 6, "velocity": 100 },
+
+              { "tick": 12, "number": 71, "duration": 6, "velocity": 100 },
+
+              { "tick": 60, "number": 72, "duration": 6, "velocity": 100 },
+
+              { "tick": 36, "number": 73, "duration": 6, "velocity": 100 },
+
+              { "tick": 24, "number": 74, "duration": 6, "velocity": 100 },
+            ]
+          };
+        } else if (selectedPattern === "reggaeton") {
+          testPattern = {
+            "length": 96,
+            "notes": [
+              { "tick": 0, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 42, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 60, "duration": 6, "velocity": 100 },
+              { "tick": 78, "number": 60, "duration": 6, "velocity": 100 },
+
+              { "tick": 36, "number": 62, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 62, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 62, "duration": 6, "velocity": 100 },
+              { "tick": 90, "number": 62, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 6, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 18, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 24, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 30, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 78, "number": 63, "duration": 6, "velocity": 100 },
+              { "tick": 90, "number": 63, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 12, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 24, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 36, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 48, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 60, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 64, "duration": 6, "velocity": 100 },
+              { "tick": 84, "number": 64, "duration": 6, "velocity": 100 },
+
+              { "tick": 36, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 65, "duration": 6, "velocity": 100 },
+              { "tick": 90, "number": 65, "duration": 6, "velocity": 100 },
+
+              { "tick": 0, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 6, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 18, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 24, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 30, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 42, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 54, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 60, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 72, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 78, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 84, "number": 67, "duration": 6, "velocity": 100 },
+              { "tick": 90, "number": 67, "duration": 6, "velocity": 100 },
+            ]
+          };
+        }
+
+        const delegatePianoRoll = window.WAMExtensions.patterns.getPatternViewDelegate(pianoRollInstance.audioNode.instanceId);
+        delegatePianoRoll.setPatternState("default", testPattern);
+      };
+    })();
+  </script>
 </body>
+
+</html>

@@ -52,13 +52,10 @@ export default class SamplerPlugin extends WebAudioModule {
 		const samplerNode = new SamplerNode(this.audioContext);
 
 		const internalParamsConfig = {
-			// samplerNode.overdrives[0] is a waveshaper. When we call setLowGain(value) it will change
-			// the curve of the waveshaper... so... we don't really want to automatize at a fast rate...
-			// I guess this is the case of a developer who is gonna do custom automation
 			currentPreset: {
-				name: 'factoryPreset2',
+				name: 'Basic Kit',
 				type: 'choice',
-				choices: ['factoryPreset1', 'factoryPreset2'],
+				choices: ['Basic Kit', 'Pop'],
 				onChange: (value) => { 
 					console.log('changement preset : value : ' + value);
 					//samplerNode.volumeGain = value; 

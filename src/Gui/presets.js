@@ -1,4 +1,4 @@
-export default class PresetManager {
+export default class PresetManager2 {
   static presets = [
     {
       name: "Basic Kit",
@@ -215,7 +215,53 @@ export default class PresetManager {
         { url: "../../audio/Grand Piano/piano-f-fs6.wav", name: "piano F#6"},
        ],
     },
-
+    {
+      name: "Lo-Fi",
+      type: "Drumkit",
+      isFactoryPresets: true,
+      samples: [
+        { url: "../../audio/Lo-Fi/kick1.wav", name: "kick1"},
+        { url: "../../audio/Lo-Fi/clap1.wav", name: "Clap1"},
+        { url: "../../audio/Lo-Fi/clap2.wav", name: "Clap2"},
+        { url: "../../audio/Lo-Fi/clap3.wav", name: "Clap3"},
+        { url: "../../audio/Lo-Fi/hihat1.wav", name: "Hihat1"},
+        { url: "../../audio/Lo-Fi/hihat2.wav", name: "Hihat2"},
+        { url: "../../audio/Lo-Fi/openhat1.wav", name: "Openhat"},
+        { url: "../../audio/Lo-Fi/crash1.wav", name: "Crash"},
+        { url: "../../audio/Lo-Fi/perc1.wav", name: "Perc1"},
+        { url: "../../audio/Lo-Fi/perc2.wav", name: "Perc2"},
+        { url: "../../audio/Lo-Fi/perc3.wav", name: "Perc3"},
+        { url: "../../audio/Lo-Fi/perc4.wav", name: "Perc4"},
+        { url: "../../audio/Lo-Fi/perc5.wav", name: "Perc5"},
+        { url: "../../audio/Lo-Fi/perc6.wav", name: "Perc6"},
+        { url: "../../audio/Lo-Fi/perc7.wav", name: "Perc7"},
+        { url: "../../audio/Lo-Fi/perc8.wav", name: "Perc8"},
+        { url: "../../audio/Lo-Fi/perc9.wav", name: "Perc9"},
+      ],
+    },
+    {
+      name: "Jazz",
+      type: "Drumkit",
+      isFactoryPresets: true,
+      samples: [
+        { url: "../../audio/Jazz/bass1.wav", name: "Bass1"},
+        { url: "../../audio/Jazz/bass2.wav", name: "Bass2"},
+        { url: "../../audio/Jazz/brush1.wav", name: "Brush1"},
+        { url: "../../audio/Jazz/brush2.wav", name: "Brush2"},
+        { url: "../../audio/Jazz/hihat1.wav", name: "Hihat1"},
+        { url: "../../audio/Jazz/hihat2.wav", name: "Hihat2"},
+        { url: "../../audio/Jazz/perc1.wav", name: "Perc1"},
+        { url: "../../audio/Jazz/perc2.wav", name: "Perc2"},
+        { url: "../../audio/Jazz/perc3.wav", name: "Perc3"},
+        { url: "../../audio/Jazz/perc4.wav", name: "Perc4"},
+        { url: "../../audio/Jazz/perc5.wav", name: "Perc5"},
+        { url: "../../audio/Jazz/perc6.wav", name: "Perc6"},
+        { url: "../../audio/Jazz/snare1.wav", name: "Snare1"},
+        { url: "../../audio/Jazz/snare2.wav", name: "Snare2"},
+        { url: "../../audio/Jazz/snare3.wav", name: "Snare3"},
+        { url: "../../audio/Jazz/snare4.wav", name: "Snare4"},
+       ],
+    },
     {
       name: "blank preset",
       type: "blank preset",
@@ -271,16 +317,16 @@ export default class PresetManager {
 
   // load presets from LocalStorage
   static loadPresetsFactory() {
-    this.presets = JSON.parse(localStorage.getItem("presets"));
+    this.presets = JSON.parse(localStorage.getItem("Sampler2presets"));
   }
 
   static getPresetsFromLocalStorage() {
-    return JSON.parse(localStorage.getItem("presets"));
+    return JSON.parse(localStorage.getItem("Sampler2presets"));
   }
 
   static getCurrentPreset(presetName) {
     if(localStorage.presets) {
-      const presets = JSON.parse(localStorage.getItem("presets"));
+      const presets = JSON.parse(localStorage.getItem("Sampler2presets"));
       const currentPreset = presets.find(preset => preset.name === presetName);
       return currentPreset;
     }else {
@@ -364,14 +410,14 @@ export default class PresetManager {
 
   // save presets to LocalStorage
   static savePresets(presetName, samplePlayers, sampleHTMLElements) {
-    if(localStorage.getItem("presets")) {
-      this.presetsToSave = JSON.parse(localStorage.getItem("presets"));
+    if(localStorage.getItem("Sampler2presets")) {
+      this.presetsToSave = JSON.parse(localStorage.getItem("Sampler2presets"));
     }
     const presetToSave = this.presetsToSave.find((p) => p.name === presetName);
     presetToSave.samples = this.newSamples(sampleHTMLElements.URLs, sampleHTMLElements.name, sampleHTMLElements.defaultName, samplePlayers);
 
     presetToSave.midiLearn = this.getMidiPresetsFromLocalStorage();
-    localStorage.setItem("presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
   }
 
   static loadPlayerFromCurrentPreset(samplePlayer,index, currentPreset) {
@@ -406,18 +452,18 @@ export default class PresetManager {
 
   //save all presets
   static saveAllPresets() {
-    localStorage.setItem("presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
   }
 
   //load current preset from LocalStorage
   static loadCurrentPreset(presetValue) {
-    const presets = JSON.parse(localStorage.getItem("presets"));
+    const presets = JSON.parse(localStorage.getItem("Sampler2presets"));
     return presets.find(preset => preset.name === presetValue.name || preset.name === presetValue);
   }
 
   static isFactoryPreset(presetName) {
-    if(localStorage.getItem("presets")) {
-      this.presetsToSave = JSON.parse(localStorage.getItem("presets"));
+    if(localStorage.getItem("Sampler2presets")) {
+      this.presetsToSave = JSON.parse(localStorage.getItem("Sampler2presets"));
     }
     return this.presetsToSave.find((p) => p.name === presetName).isFactoryPresets;
   }
@@ -425,14 +471,14 @@ export default class PresetManager {
   //remove a preset from LocalStorage
   static removePreset(preset) {
     this.presetsToSave = this.presetsToSave.filter((p) => p.name !== preset);
-    localStorage.setItem("presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
   }
 
   static resetPreset (preset) {
     const factoryPreset = this.presets.find((p) => p.name === preset);
     const index = this.presets.findIndex((p) => p.name === preset);
     this.presetsToSave[index] = factoryPreset;
-    localStorage.setItem("presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
   }
 
   // clear presets from LocalStorage
@@ -575,7 +621,7 @@ export default class PresetManager {
      }
     });
     presetToSave.midiLearn = currentListMidiLearn;
-    localStorage.setItem("presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
   }
 
   static clearMidiMappingFromCurrentPreset(presetName) {

@@ -1,0 +1,775 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+.wrapper {
+    position: relative;
+    width: 280px;
+    height: 50px;
+	padding: 0px;
+}
+
+.wrapper canvas {
+    position: absolute;
+    top: 0;
+    left: 10px;
+}
+
+/* Modifie la taille du waveform */
+#myCanvas {
+    border: 1px solid black;
+    background-color:black;
+    z-index:0;
+    /* background-color: pink; */
+}
+
+#myCanvasOverlay {
+    border:1px solid darkgray;
+    position: absolute;
+    z-index:5;
+  }
+
+#myCanvas, #myCanvasOverlay {
+	border-radius: 2px;
+}
+
+#parameters {
+    /* background-color: red; */
+    width: 300px;
+    height: 350px;
+}
+
+#sampler {
+	position: relative;
+	overflow: hidden;
+
+	display: flex;
+    justify-content: left;
+    border: 2px solid;
+
+	margin: 20px;
+    width: 600px;
+    height: 350px;
+	background-color: rgba(0, 0, 0, 0.1);
+    /* background-color: blue; */
+
+	box-shadow: 10px 10px 5px #888888;	
+	border-radius: 10px;
+}
+
+#sampler:focus {
+	outline: none;
+}
+
+#sampler:before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1200px;
+	height: 700px;
+ 	background-image:  url('data:image/jpeg;base64,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');
+	opacity: 1;
+	background-size: 50% 50%;
+	background-repeat: repeat;
+	
+	z-index: -1;
+	animation: move 30s infinite linear;
+}
+  
+@keyframes move {
+	0% {
+		transform: translate(0%, 0%);
+	}
+	100% {
+		transform: translate(-50%, -50%);
+	}
+}
+  
+
+#waveform {
+	height: 90px;
+	width: 300px;
+	/* background-color: green; */
+}
+
+/* Label soundname */
+#soundName {
+    width: 280px;
+    height: 20px;
+	padding: 10px;
+    margin: 0px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+	color: white;
+	text-shadow: 0px 0px 1px black;
+	font-weight: bold;
+	overflow-x: scroll;
+	/*overflow: hidden;*/
+	-ms-overflow-style: none;  /* IE and Edge */
+	scrollbar-width: none;  /* Firefox */
+	&::-webkit-scrollbar { /* Chrome, Safari, Opera */
+		display: none;
+	}
+	/*text-overflow: ellipsis;*/
+	white-space: nowrap;
+    /* background-color: yellow; */
+}
+
+#labelSampleName {
+	display: inline-block;
+    width: 200px;
+    height: 20px;
+	padding: 2px;
+    margin: 0px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+	color: white;
+	text-shadow: 0px 0px 1px black;
+	font-weight: bold;
+	overflow-x: scroll;
+	/*overflow: hidden;*/
+	-ms-overflow-style: none;  /* IE and Edge */
+	scrollbar-width: none;  /* Firefox */
+	&::-webkit-scrollbar { /* Chrome, Safari, Opera */
+		display: none;
+	}
+	/*text-overflow: ellipsis;*/
+	white-space: nowrap;
+	cursor: pointer;
+    /* background-color: yellow; */
+}
+
+#labelSampleName, #inputSampleName, #choiceExplorer, #choiceKnobs, #choiseMIDI {
+	font-family: 'Share Tech Mono', monospace;
+}
+
+button {
+	cursor: pointer;
+	transform: scale(1);
+	transform-origin: center;
+}
+
+button:hover {
+	background-color: #E9E9F0;
+	transform: scale(1.02);
+}
+
+#enableVelocity:hover {
+	background-color: orange;
+}
+
+button:active {
+	transform: scale(0.97);
+}
+
+select:hover {
+	background-color: #E9E9F0;
+	transform: scale(1.005);
+}
+
+.presetClass, .researchClass, .effectClass, .noteSetClass, .midiClassBtn{
+	font-family: 'Share Tech Mono', monospace;
+	border-radius: 8px;
+	cursor: pointer;
+	text-align: center;
+}
+
+.presetClass, .researchClass, .noteSetClass, .midiClassBtn{
+	border: 1px solid black;
+}
+
+.noteSet{
+	display: flex;
+	gap: 2px;
+	margin-top: 3px;
+}
+
+.effectClass {
+	font-size: 10px;
+}
+.adsrClass {
+	font-size: 12px;
+	font-family: 'Share Tech Mono', monospace;
+	
+}
+
+#inputSampleName {
+	display: none;
+	height: 20px;
+}
+
+/*
+::-webkit-scrollbar {
+	display: none;
+  }
+*/
+#presets {
+    /* background-color: lightgreen; */
+    padding: 10px;
+	padding-top : 6px;
+    width: 280px;
+	height: 50px;
+	overflow: hidden;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 1px;
+	
+}
+
+#selectPreset {
+	width: 280px;
+	height: 16px;
+	font-size: 10px;
+	padding: 0px;
+	margin: 0px;
+	margin-bottom: 1px;
+	border: 1px solid black;
+}
+
+#createPreset, #deletePreset, #savePreset {
+	width: 90px;
+	height: 20px;
+	font-size: 10px;
+	padding: 0px;
+	margin: 0px;
+}
+
+#createNoteSet {
+	width: 120px;
+	height: 18px;
+	font-size: 10px;
+}
+
+#selectNoteSet {
+	width: 150px;
+    height: 18px;
+    font-size: 10px;
+	border: 1px solid black;
+}
+
+#gridWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#matrixDrumPadHandler {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+	margin-top: 5px;
+    width: 280px;
+	height: 30px;
+}
+
+#matrixDrumPad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    width: 280px;
+    height: 300px;
+    padding: 10px;
+    /* background-color: yellow; */
+}
+
+.deleteSample {
+	width: 10px;
+	height: 10px;
+	font-size: 8px;
+	font-weight: bold;
+	padding: 0px;
+	margin: 0px;
+	color: red;
+	background-color: transparent;
+	border: none;
+	position: absolute;
+	top: -2px;
+	left: 40px;
+	z-index: 2;
+}
+
+
+.padDiv {
+	width: 66.25px;
+	height: 75px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+.padDiv2 {
+	width: 66.25px;
+	height: px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+.padbutton {
+    width: 66.25px;
+    height: 0.25px;
+	padding : 0px;
+    border: 2px solid #888888;
+	border-top: none;
+	border-bottom-width: revert;
+	outline: none;
+    background-color: #ccc;
+    cursor: pointer;
+    font-size: 10px;
+	border-radius: 12px;
+	box-shadow: -2px -6px 11px #A8FFBA, -2px -3px 5px #F6ECEB, -6px 0px 10px #F6ECEB, 2px 6px 11px #F6ECEB rgba(0, 0, 0, 0.2);
+	justify-content: center;
+	align-items: center;
+	position: relative;
+	cursor: pointer;
+	color: transparent;
+
+	font-family: 'Share Tech Mono', monospace;
+}
+
+.switchpad {
+	width: 66.25px;
+	height: 66.25px;
+}
+
+.switchpadHandler {
+	width: 66.25px;
+	height: 66.25px;
+}
+
+.button_text {
+	font-size: 10px;
+	transition: 0.13s ease-in-out;
+	position: relative;
+	transform: translate3d(0px, -4px, 0px);
+	margin: 0px;
+	padding: 0px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+    -webkit-line-clamp: 3; /* number of lines to show */
+    line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow-wrap: break-word;
+	color: black;
+	text-align: center;
+	font-family: 'Share Tech Mono', monospace;
+}
+
+.button_key_text {
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	font-size: 8px;
+	color: black;
+}
+
+.button_midi_note {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	font-size: 8px;
+	color: black;
+}
+
+
+.padactionbutton {
+    font-family: courier;
+    font-size: 8px;
+}
+
+.padprogress {
+    width: 100%;
+    height: 4px;
+}
+
+.set {
+	background-color: lightgreen;
+}
+
+.active {
+	border: 1px solid darkred;
+	background-color: red;
+}
+
+.active {
+	box-shadow: none;
+}
+
+.active .button_text {
+	transform: translate3d(0px, 0px, -20px);
+}
+
+.padbutton:active {
+	background-color: red;
+}
+
+.padbutton:active{
+	box-shadow: none;
+}
+
+.padbutton:active .button_text {
+	transform: translate3d(0px, 0px, -20px);
+}
+
+.selected {
+	box-shadow: 1px 1px 1px red, -1px -1px 1px red, 1px -1px 1px red, -1px 1px 1px red;
+}
+
+#choice{
+	width: 280px;
+	height: 180px;
+	padding: 10px;
+	padding-top: 2px;
+	
+}
+
+#choiceKnobs, #choiceExplorer, #choiceMIDI {
+	margin-bottom: 8px;
+	justify-content: center;
+	align-items: center;
+	width: 90px;
+	height: 15px;
+	font-size: 10px;
+	border: 1px solid black;
+	border-radius: 10px;
+	font-family: 'Share Tech Mono', monospace;
+}
+
+
+#explorer {
+	font-size: 0px;
+	display: inline-block;
+	width: 280px;
+	height: 160px;
+	margin-bottom: 2px;
+	color: white;
+	text-shadow: 0px 0px 1px black;
+}
+
+#research {
+	display: flex;
+	width: 280px;
+	height: 15px;
+	font-size: 10px;
+	margin-bottom: 5px;
+    justify-content: center;
+	align-items: center;
+}
+
+#freesoundAPI {
+	display: flex;
+	width: 280px;
+	height: 15px;
+	font-size: 10px;
+	margin-bottom: 5px;
+    justify-content: center;
+	align-items: center;
+}
+
+#apiKey {
+	box-sizing: border-box;
+	width: 170px;
+	height: 15px;
+	font-size: 10px;
+	padding: 0px;
+	margin: 0px;
+	& option {
+		font-size: 10px;
+	}
+	-webkit-text-security: disc; /* pour les navigateurs basés sur WebKit */
+	-moz-text-security: disc; /* pour les navigateurs basés sur Mozilla */
+	text-security: disc; /* pour les autres navigateurs */
+}
+
+#apiKeyButton {
+	height: 15px;
+	width: 28px;
+	font-size: 10px;
+	padding: 0px;
+	margin-right: 5px;
+	justify-content: center;
+	align-items: center;
+}
+
+#apiKeyButton.saved {
+	border: 1px solid green;
+	border-radius: 2px;
+	background-color: lightgreen;
+}
+
+
+#search {
+	box-sizing: border-box;
+	width: 90px;
+	height: 15px;
+	font-size: 10px;
+	padding: 0px;
+	margin: 0px;
+	& option {
+		font-size: 10px;
+	}
+}
+
+#searchButton {
+	width: 60px;
+	height: 15px;
+	font-size: 10px;
+	padding: 0px;
+	margin-right: 5px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border: 2px solid green;
+	border-radius: 3px;
+}
+
+.error {
+	border: 1px solid darkred;
+	border-radius: 2px;
+	background-color: red;
+}
+
+#timeRange {
+	width: 50px;
+	height: 15px;
+	font-size: 10px;
+	padding: 0px;
+	margin-right: 5px;
+}
+
+#results {
+	width: 280px;
+	height: 110px;
+	margin-bottom: 5px;
+	display: inline-block;
+	overflow-y: scroll;
+	-ms-overflow-style: none;  /* IE and Edge */
+	scrollbar-width: none;  /* Firefox */
+	&::-webkit-scrollbar { /* Chrome, Safari, Opera */
+		display: none;
+	}
+	border-radius: 10px;
+}
+
+#results.error {
+	border: 1px solid darkred;
+	background-color: rgba(255, 0, 0, 0.5);
+	color: white;
+	text-shadow: 0px 0px 1px black;
+	font-size: 12px;
+	text-align: center;
+	justify-content: center;
+	align-items: center;
+	display: flex;
+}
+
+#nextPage, #previousPage {
+	width: 25px;
+	height: 15px;
+	font-size: 10px;
+	padding: 0px;
+	margin: 0px;
+}
+
+.resultExplorer {
+	display: inline-block;
+	width: 90px;
+	height: 33px;
+	margin-right: 1.5px;
+	margin-left: 1.5px;
+	margin-bottom: 5px;
+}
+
+.resultButton {
+	width: 90px;
+	height: 26px;
+	margin-top: 3px;
+	font-size: 10px;
+	white-space: normal;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	justify-content: center;
+	align-items: center;
+	border-radius: 10px;
+    border: 1px solid black;
+    background-color: #ccc;
+    color: black;
+    cursor: pointer;
+	box-shadow: none;
+	position: relative;
+}
+
+button, select, input {
+	&:focus {
+		outline: none;
+	}
+}
+
+
+.choiceBtn:hover {
+	background-color: orange;
+}
+
+
+option {
+	text-align: center;
+	overflow: hidden;
+}
+
+.resultButton.set {
+	border: 1px solid green;
+	background-color: lightgreen;
+}
+
+.resultButton.active {
+	background-color: red;
+	border: 1px solid darkred;
+}
+
+.resultButton.selected {
+	border: 1px solid darkred;
+	box-shadow: 1px 1px 1px red, -1px -1px 1px red, 1px -1px 1px red, -1px 1px 1px red;
+}
+
+.progressExplorer {
+	margin-top: 1px;
+	width: 100%;
+	height: 5px;
+}
+
+#MIDI {
+	display : flex;
+	flex-direction: row;
+	align-content: flex-start;
+	justify-content: center;
+	gap: 10px;
+	flex-wrap: wrap;
+	width: 280px;
+	height: 160px;
+	padding-bottom: 10px;
+	color: white;
+	text-shadow: 0px 0px 1px black;
+}
+
+#MIDI h1 {
+	text-align: center;
+}
+
+.midiClassBtn {
+	width: 80px;
+	height: 50px;
+	font-size: 10px;
+}
+
+.midiClassBtn:active {
+	border: none;
+	background-color: orange;
+}
+
+.midiClassBtn:hover, #reverse:hover, #envBtn:hover{
+	background-color: orange;
+}
+
+
+
+#knobs {
+	display: grid;
+	justify-content: center;
+	justify-items: center;
+	align-items: center;
+	width: 280px;
+	height: 160px;
+	padding-bottom: 10px;
+	grid-template-columns: repeat(5, 1fr);
+	grid-template-rows: repeat(3, 1fr);
+	gap: 5px;
+}
+
+.knob {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	justify-items: center;
+    align-items: center;
+	width: 50px;
+	height: 50px;
+}
+
+.knob label {
+	text-align: center;
+	color: white;
+	text-shadow: 0px 0px 1px black;
+	font-size: 13px;
+}
+
+.knobEnv {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	justify-items: center;
+    align-items: center;
+	width: 50px;
+	height: 50px;
+}
+
+.knobEnv label {
+	text-align: center;
+	color: white;
+	text-shadow: 0px 0px 1px black;
+}
+
+#reverse {
+	width: 50px;
+	height: 20px;
+	font-size: 10px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 10px;
+	border: none;
+	color: black;
+	cursor: pointer;
+	box-shadow: none;
+	position: relative;
+}
+
+#envBtn{
+	width: 50px;
+	height: 20px;
+	font-size: 10px;
+	justify-content: center;
+	align-items: center;
+	border-radius: 10px;
+	border: none;
+	color: black;
+	cursor: pointer;
+	box-shadow: none;
+	position: relative;
+}
+
+.choose {
+	background-color: orange;
+	border: 1px solid red;
+}
+
+.element-disabled{
+	pointer-events: none;
+	opacity: 0.5;
+	transform: scale(1);
+}
+
+#formHelp {
+	position: absolute;
+	padding: 2px;
+	right: 3px;
+}
+#formHelp button {
+	font-size: 10px;
+	cursor: pointer;
+	border-radius : 5px;
+	font-family: 'Share Tech Mono', monospace;
+}
+#formHelp button:hover {
+	background-color: #DDDCE3;
+}

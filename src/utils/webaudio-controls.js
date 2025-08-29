@@ -2,9 +2,9 @@
 /* *
  *
  *  WebAudio-Controls is based on
- *    webaudio-knob by Eiji Kitamura http://google.com/+agektmr
+ *    webaudio-knob2 by Eiji Kitamura http://google.com/+agektmr
  *    webaudio-slider by RYoya Kawai https://plus.google.com/108242669191458983485/posts
- *    webaudio-switch by Keisuke Ai http://d.hatena.ne.jp/aike/
+ *    webaudio-switch2 by Keisuke Ai http://d.hatena.ne.jp/aike/
  *  Integrated and enhanced by g200kg http://www.g200kg.com/
  *
  *	Copyright 2013 Eiji Kitamura / Ryoya KAWAI / Keisuke Ai / g200kg(Tatsuya Shinyagaito)
@@ -107,7 +107,7 @@ if(window.customElements){
   };
   if(window.WebAudioControlsOptions)
     Object.assign(opt,window.WebAudioControlsOptions);
-  class WebAudioControlsWidget extends HTMLElement{
+  class WebAudioControlsWidget2 extends HTMLElement{
     constructor(){
       super();
       this.addEventListener("keydown",this.keydown);
@@ -322,7 +322,7 @@ if(window.customElements){
         webAudioControlsWidgetManager.preserveMidiLearn();
       }
       if(this.listeningToThisMidiController(channel, controlNumber)) {
-        if(this.tagName=="WEBAUDIO-SWITCH"){
+        if(this.tagName=="WEBAUDIO-SWITCH2"){
           switch(this.type){
           case "toggle":
             if(event.data[2]>=64)
@@ -338,7 +338,7 @@ if(window.customElements){
             else this.setValue(event.data[2]>=64?1:0);
             break;
           case "radio":
-            let els=document.querySelectorAll("webaudio-switch[type='radio'][group='"+this.group+"']");
+            let els=document.querySelectorAll("webaudio-switch2[type='radio'][group='"+this.group+"']");
             for(let i=0;i<els.length;++i){
               if(els[i]==this)
                 els[i].setValue(1);
@@ -357,7 +357,7 @@ if(window.customElements){
   }
 
 try{
-    customElements.define("webaudio-knob", class WebAudioKnob extends WebAudioControlsWidget {
+    customElements.define("webaudio-knob2", class WebAudioKnob2 extends WebAudioControlsWidget2 {
     constructor(){
       super();
     }
@@ -378,7 +378,7 @@ ${this.basestyle}
   font-family: sans-serif;
   font-size: 11px;
 }
-.webaudio-knob-body{
+.webaudio-knob2-body{
   display:inline-block;
   position:relative;
   margin:0;
@@ -387,7 +387,7 @@ ${this.basestyle}
   white-space:pre;
 }
 </style>
-<div class='webaudio-knob-body' tabindex='1' touch-action='none'><div class='webaudioctrl-tooltip'></div><div part="label" class="webaudioctrl-label"><slot></slot></div></div>
+<div class='webaudio-knob2-body' tabindex='1' touch-action='none'><div class='webaudioctrl-tooltip'></div><div part="label" class="webaudioctrl-label"><slot></slot></div></div>
 `;
       this.elem=root.childNodes[2];
       this.ttframe=this.elem.firstChild;
@@ -711,11 +711,11 @@ ${this.basestyle}
     }
   });
 } catch(error){
-  console.log("webaudio-knob already defined");
+  console.log("webaudio-knob2 already defined");
 }
 
 try{
-  customElements.define("webaudio-slider", class WebAudioSlider extends WebAudioControlsWidget {
+  customElements.define("webaudio-slider", class WebAudioSlider2 extends WebAudioControlsWidget2 {
     constructor(){
       super();
     }
@@ -1150,7 +1150,7 @@ ${this.basestyle}
 }
 
 try{
-  customElements.define("webaudio-switch", class WebAudioSwitch extends WebAudioControlsWidget {
+  customElements.define("webaudio-switch2", class WebAudioSwitch2 extends WebAudioControlsWidget2 {
     constructor(){
       super();
     }
@@ -1175,7 +1175,7 @@ ${this.basestyle}
   font-size: 11px;
   cursor:pointer;
 }
-.webaudio-switch-body{
+.webaudio-switch2-body{
   display:inline-block;
   position:relative;
   margin:0;
@@ -1194,7 +1194,7 @@ ${this.basestyle}
   height: 50px;
 }
 </style>
-<div class='webaudio-switch-body' tabindex='1' touch-action='none'><div class='webaudioctrl-tooltip'></div><div part="label" class="webaudioctrl-label"><slot></slot></div></div>
+<div class='webaudio-switch2-body' tabindex='1' touch-action='none'><div class='webaudioctrl-tooltip'></div><div part="label" class="webaudioctrl-label"><slot></slot></div></div>
 `;
       this.elem=root.childNodes[2];
       this.ttframe=this.elem.firstChild;
@@ -1384,7 +1384,7 @@ ${this.basestyle}
         this.sendEvent("change");
         break;
       case "radio":
-        let els=document.querySelectorAll("webaudio-switch[type='radio'][group='"+this.group+"']");
+        let els=document.querySelectorAll("webaudio-switch2[type='radio'][group='"+this.group+"']");
         for(let i=0;i<els.length;++i){
           if(els[i]==this)
             els[i].setValue(1);
@@ -1413,11 +1413,11 @@ ${this.basestyle}
     }
   });
 } catch(error){
-  console.log("webaudio-switch already defined");
+  console.log("webaudio-switch2 already defined");
 }
 
 try{
-  customElements.define("webaudio-param", class WebAudioParam extends WebAudioControlsWidget {
+  customElements.define("webaudio-param", class WebAudioParam2 extends WebAudioControlsWidget2 {
     constructor(){
       super();
       this.addEventListener("keydown",this.keydown);
@@ -1590,7 +1590,7 @@ ${this.basestyle}
 }
 
 try{
-  customElements.define("webaudio-keyboard", class WebAudioKeyboard extends WebAudioControlsWidget {
+  customElements.define("webaudio-keyboard", class WebAudiokeyboard2 extends WebAudioControlsWidget2 {
     constructor(){
       super();
     }
@@ -1920,7 +1920,7 @@ ${this.basestyle}
       this.listOfWidgets.push(w);
     }
     updateWidgets(){
-//      this.listOfWidgets = document.querySelectorAll("webaudio-knob,webaudio-slider,webaudio-switch");
+//      this.listOfWidgets = document.querySelectorAll("webaudio-knob2,webaudio-slider,webaudio-switch2");
     }
     initWebAudioControls() {
       if(navigator.requestMIDIAccess) {

@@ -2,7 +2,7 @@ import WaveformDrawer from './WaveformDrawer.js';
 import EffectStack from './EffectStack.js';
 import ADSRNode from "./adsrNode.js";
 
-export default class SamplePlayer {
+export default class SamplePlayer2 {
     constructor(audioCtx, canvasWaveform, canvasOverlay, color, decodedSound, pluginAudioNode, semitones) {
         this.ctx = audioCtx;
         this.canvasWaveform = canvasWaveform;
@@ -53,7 +53,6 @@ export default class SamplePlayer {
 
     play() {
         this.startTime = this.ctx.currentTime;
-
         this.bufferSource = this.ctx.createBufferSource();
         this.bufferSource.buffer = this.decodedSound;
         //this.bufferSource.playbackRate.value = this.effects.pitchRate;

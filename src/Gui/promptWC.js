@@ -90,4 +90,7 @@ class HTMLPrompt extends HTMLElement {
   }
 }
 
-customElements.define('html-prompt', HTMLPrompt);
+// Define html-prompt element only if not already defined
+if (!customElements.get('html-prompt')) {
+  customElements.define('html-prompt', HTMLPrompt);
+}
