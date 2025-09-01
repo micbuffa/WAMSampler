@@ -46,8 +46,8 @@ export class MIDI {
 	static CC = 0xB0;
 }
 
-let style = await fetch(getBaseURL()  + 'style.css').then(response => response.text());
-let template = await fetch(getBaseURL()  +'template.html').then(response => response.text());
+let style = await fetch(getBaseURL() + 'style.css').then(response => response.text());
+let template = await fetch(getBaseURL() + 'template.html').then(response => response.text());
 
 // The GUI is a WebComponent. Not mandatory but useful.
 // MANDORY : the GUI should be a DOM node. WebComponents are
@@ -1255,7 +1255,7 @@ export default class SamplerHTMLElement2 extends HTMLElement {
 		resetBtn.onclick = () => {
 			const currentPreset = this.shadowRoot.querySelector('#selectPreset').value;
 			const switchpads = this.shadowRoot.querySelectorAll('.switchpad')
-			if (localStorage.presets && PresetManager2.getMidiLearnListFromCurrentPreset(currentPreset)) {
+			if (localStorage.sampler2Presets && PresetManager2.getMidiLearnListFromCurrentPreset(currentPreset)) {
 				PresetManager2.loadMidiControllerFromCurrentPreset(currentPreset, switchpads);
 
 				switchpads.forEach((switchpad) => {
@@ -1283,7 +1283,7 @@ export default class SamplerHTMLElement2 extends HTMLElement {
 		let midiLearnList = [];
 		const preset = this.shadowRoot.querySelector('#selectPreset').value;
 		PresetManager2.setDefaultMidiMapping(preset, switchPads, defaultRootMidiNote);
-		if (localStorage.presets && !manualClick) {
+		if (localStorage.sampler2Presets && !manualClick) {
 			if (PresetManager2.getMidiLearnListFromCurrentPreset(preset)) {
 				const midiList = PresetManager2.getMidiLearnListFromCurrentPreset(preset);
 				midiList.forEach((midi) => {
@@ -1454,14 +1454,17 @@ export default class SamplerHTMLElement2 extends HTMLElement {
 			const currentMidiLearn = listMidiLearn.find(element => element.id == switchPad.id);
 			this.setMidiNoteName(index % 16, currentMidiLearn.cc.cc);
 			return;
-		} else if (localStorage.presets && PresetManager2.getMidiLearnListFromCurrentPreset(currentPreset)) {
+		} else if (localStorage.sampler2Presets && PresetManager2.getMidiLearnListFromCurrentPreset(currentPreset)) {
 			const currentMidiLearn = PresetManager2.getMidiLearnFromCurrentPreset(currentPreset, switchPad.id);
 			if (currentMidiLearn === undefined) return;
 			this.setMidiNoteName(index % 16, currentMidiLearn.cc.cc);
 		}
 	}
 
-	setKnobsEffects() {
+	setKnobsEffects(newPlayer) {
+		if (newPlayer) {
+			this.player = newPlayer;
+		}
 		// enable effects knobs
 		const effectKnobs = this.shadowRoot.querySelectorAll('.knob');
 		effectKnobs.forEach((effectKnob) => { effectKnob.classList.remove('element-disabled') });
@@ -1617,19 +1620,20 @@ export default class SamplerHTMLElement2 extends HTMLElement {
 		const deletePreset = this.shadowRoot.querySelector('#deletePreset');
 		let preset;
 
-		if (localStorage.presets) {
+		if (localStorage.sampler2Presets) {
 			preset = PresetManager2.getCurrentPreset(presetName);
 		}
 		else {
 			preset = PresetManager2.getFactoryPreset(presetName);
 		}
 
-		if (preset.isFactoryPresets) {
-			deletePreset.innerHTML = "Reset preset";
-		}
-		else if (!preset.isFactoryPresets) {
-			deletePreset.innerHTML = "Delete preset";
-		}
+			if (preset.isFactoryPresets) {
+				deletePreset.innerHTML = "Reset preset";
+			}
+			else if (!preset.isFactoryPresets) {
+				deletePreset.innerHTML = "Delete preset";
+			}
+
 
 		deletePreset.onclick = () => { this.deletePreset(); };
 
@@ -1707,7 +1711,7 @@ export default class SamplerHTMLElement2 extends HTMLElement {
 			progressBar.value = 0;
 		}
 
-		if (localStorage.presets) {
+		if (localStorage.sampler2Presets) {
 			// if local storage has presets item, load the selected preset saved in local storage
 			const currentPreset = PresetManager2.getCurrentPreset(presetValue);
 
@@ -1746,7 +1750,7 @@ export default class SamplerHTMLElement2 extends HTMLElement {
 				}
 				const switchPads = this.shadowRoot.querySelectorAll('.switchpad');
 				//if current preset has midi learn, load midi learn from current preset, else load default midi mapping
-				if (localStorage.presets && PresetManager2.getMidiLearnListFromCurrentPreset(currentPreset)) {
+				if (localStorage.sampler2Presets && PresetManager2.getMidiLearnListFromCurrentPreset(currentPreset)) {
 					PresetManager2.loadMidiControllerFromCurrentPreset(currentPreset, switchPads);
 					switchPads.forEach((switchPad) => {
 						const index = switchPad.id.match(/\d+/g)[0];
@@ -1766,7 +1770,7 @@ export default class SamplerHTMLElement2 extends HTMLElement {
 			bl.load();
 		}
 		// if local Storage doesn't have presets item, load the selected preset from factory presets
-		if (!localStorage.getItem("Sampler2presets")) {
+		if (!localStorage.getItem("sampler2Presets")) {
 			if (presetValue.name) {
 				presetValue = presetValue.name;
 			}
@@ -1992,7 +1996,7 @@ export default class SamplerHTMLElement2 extends HTMLElement {
 			const newPlayer = new SamplePlayer2(this.plugin.audioContext, this.canvas, this.canvasOverlay, "orange", currentPlayer.newDecodedSound, this.plugin.audioNode, currentPlayer.semitones);
 			newPlayer.decodedSound = newPlayer.newDecodedSound;
 			newPlayer.semitones = 0;
-			this.setKnobsEffects();
+			this.setKnobsEffects(newPlayer);
 			this.samplePlayers[fundamentalIndex] = newPlayer;
 			this.samplePlayers[fundamentalIndex] = NoteSet2.setEffectsSamplePlayer(this.samplePlayers[fundamentalIndex], currentPlayer);
 
@@ -2034,6 +2038,7 @@ export default class SamplerHTMLElement2 extends HTMLElement {
 			const presetSelectMenu = this.shadowRoot.querySelector('#selectPreset');
 			PresetManager2.buildPresetMenu(presetSelectMenu);
 
+			/*
 			const newDecodedSounds = [];
 			this.samplePlayers.forEach((player, index) => {
 				if (player) {
@@ -2041,6 +2046,7 @@ export default class SamplerHTMLElement2 extends HTMLElement {
 				}
 			});
 			this.loadCurrentPreset(presetName, newDecodedSounds);
+			*/
 
 			this.shadowRoot.querySelector('#selectPreset').value = presetName;
 		}

@@ -317,16 +317,16 @@ export default class PresetManager2 {
 
   // load presets from LocalStorage
   static loadPresetsFactory() {
-    this.presets = JSON.parse(localStorage.getItem("Sampler2presets"));
+    this.presets = JSON.parse(localStorage.getItem("sampler2Presets"));
   }
 
   static getPresetsFromLocalStorage() {
-    return JSON.parse(localStorage.getItem("Sampler2presets"));
+    return JSON.parse(localStorage.getItem("sampler2Presets"));
   }
 
   static getCurrentPreset(presetName) {
-    if(localStorage.presets) {
-      const presets = JSON.parse(localStorage.getItem("Sampler2presets"));
+    if(localStorage.sampler2Presets) {
+      const presets = JSON.parse(localStorage.getItem("sampler2Presets"));
       const currentPreset = presets.find(preset => preset.name === presetName);
       return currentPreset;
     }else {
@@ -410,14 +410,14 @@ export default class PresetManager2 {
 
   // save presets to LocalStorage
   static savePresets(presetName, samplePlayers, sampleHTMLElements) {
-    if(localStorage.getItem("Sampler2presets")) {
-      this.presetsToSave = JSON.parse(localStorage.getItem("Sampler2presets"));
+    if(localStorage.getItem("sampler2Presets")) {
+      this.presetsToSave = JSON.parse(localStorage.getItem("sampler2Presets"));
     }
     const presetToSave = this.presetsToSave.find((p) => p.name === presetName);
     presetToSave.samples = this.newSamples(sampleHTMLElements.URLs, sampleHTMLElements.name, sampleHTMLElements.defaultName, samplePlayers);
 
     presetToSave.midiLearn = this.getMidiPresetsFromLocalStorage();
-    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("sampler2Presets", JSON.stringify(this.presetsToSave));
   }
 
   static loadPlayerFromCurrentPreset(samplePlayer,index, currentPreset) {
@@ -452,18 +452,18 @@ export default class PresetManager2 {
 
   //save all presets
   static saveAllPresets() {
-    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("sampler2Presets", JSON.stringify(this.presetsToSave));
   }
 
   //load current preset from LocalStorage
   static loadCurrentPreset(presetValue) {
-    const presets = JSON.parse(localStorage.getItem("Sampler2presets"));
+    const presets = JSON.parse(localStorage.getItem("sampler2Presets"));
     return presets.find(preset => preset.name === presetValue.name || preset.name === presetValue);
   }
 
   static isFactoryPreset(presetName) {
-    if(localStorage.getItem("Sampler2presets")) {
-      this.presetsToSave = JSON.parse(localStorage.getItem("Sampler2presets"));
+    if(localStorage.getItem("sampler2Presets")) {
+      this.presetsToSave = JSON.parse(localStorage.getItem("sampler2Presets"));
     }
     return this.presetsToSave.find((p) => p.name === presetName).isFactoryPresets;
   }
@@ -471,14 +471,14 @@ export default class PresetManager2 {
   //remove a preset from LocalStorage
   static removePreset(preset) {
     this.presetsToSave = this.presetsToSave.filter((p) => p.name !== preset);
-    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("sampler2Presets", JSON.stringify(this.presetsToSave));
   }
 
   static resetPreset (preset) {
     const factoryPreset = this.presets.find((p) => p.name === preset);
     const index = this.presets.findIndex((p) => p.name === preset);
     this.presetsToSave[index] = factoryPreset;
-    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("sampler2Presets", JSON.stringify(this.presetsToSave));
   }
 
   // clear presets from LocalStorage
@@ -570,12 +570,12 @@ export default class PresetManager2 {
       });
 
       //if no preset is saved with midi configuration, reset WebAudioControlsMidiLearn
-      if(!localStorage.presets) {
+      if(!localStorage.sampler2Presets) {
         localStorage.setItem("WebAudioControlsMidiLearn", JSON.stringify(midiLearn));
         return;
       }
       //if the current preset is saved with midi configuration, get midi learn from this preset and add it to WebAudioControlsMidiLearn
-      if(localStorage.presets){
+      if(localStorage.sampler2Presets){
         if(this.getMidiLearnListFromCurrentPreset(presetName)) {
          this.loadMidiControllerFromCurrentPreset(presetName, switchPads);
         }
@@ -591,7 +591,7 @@ export default class PresetManager2 {
   }
 
   static loadMidiControllerFromCurrentPreset(presetName, switchPads) {
-    if(localStorage.presets){
+    if(localStorage.sampler2Presets){
       if(this.getMidiLearnListFromCurrentPreset(presetName, switchPads)) {
         const midiLearnSaved = this.getMidiLearnListFromCurrentPreset(presetName);
         const switchPadsWithMidiLearn = midiLearnSaved.filter(element => element.cc.cc);
@@ -621,7 +621,7 @@ export default class PresetManager2 {
      }
     });
     presetToSave.midiLearn = currentListMidiLearn;
-    localStorage.setItem("Sampler2presets", JSON.stringify(this.presetsToSave));
+    localStorage.setItem("sampler2Presets", JSON.stringify(this.presetsToSave));
   }
 
   static clearMidiMappingFromCurrentPreset(presetName) {

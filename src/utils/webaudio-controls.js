@@ -2,9 +2,9 @@
 /* *
  *
  *  WebAudio-Controls is based on
- *    webaudio-knob2 by Eiji Kitamura http://google.com/+agektmr
+ *    webaudio-knob by Eiji Kitamura http://google.com/+agektmr
  *    webaudio-slider by RYoya Kawai https://plus.google.com/108242669191458983485/posts
- *    webaudio-switch2 by Keisuke Ai http://d.hatena.ne.jp/aike/
+ *    webaudio-switch by Keisuke Ai http://d.hatena.ne.jp/aike/
  *  Integrated and enhanced by g200kg http://www.g200kg.com/
  *
  *	Copyright 2013 Eiji Kitamura / Ryoya KAWAI / Keisuke Ai / g200kg(Tatsuya Shinyagaito)
